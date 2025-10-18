@@ -28,12 +28,15 @@ impl<'a> Lexer<'a> {
     }
 
     fn eat_whitespace(&mut self) {
-		if let Some(&peeked_char) = self.peek_char() {
-			if peeked_char == ' ' || peeked_char == '\r' || peeked_char == '\t' || peeked_char == '\n' {
+		while let Some(&ch) = self.peek_char() {
+			if ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n' {
 				self.read_char().unwrap();
-			}			
+			} else {
+				break;
+			}
 		}
-    }
+	}
+
 
     fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
@@ -78,7 +81,7 @@ mod tests {
 
     #[test]
     fn test_next_token<'a>() {
-        let source = "==+(){} ,;|";
+        let source = "==+(){}  ,;|";
 
         let lexer_cases = [
             Token::new(TokenType::EQUALS, "==".to_string()),

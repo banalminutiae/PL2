@@ -31,8 +31,3 @@ pub enum TokenType {
     EOF,
 }
 
-
-
-fn lookup_identifier(identifier: String) {
-	
-}
