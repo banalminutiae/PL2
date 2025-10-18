@@ -4,6 +4,12 @@ pub struct Token {
     pub literal: String,
 }
 
+impl Token {
+    pub fn new(token_type: TokenType, literal: String) -> Token {
+        Token { token_type, literal }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 pub enum TokenType {
     IDENTIFIER,
@@ -23,4 +29,10 @@ pub enum TokenType {
     FUNCTION,
     LET,
     EOF,
+}
+
+
+
+fn lookup_identifier(identifier: String) {
+	
 }
