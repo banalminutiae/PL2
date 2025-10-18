@@ -4,27 +4,27 @@ use std::str::Chars;
 
 pub struct Lexer<'a> {
     input: &'a str,
-    read_position: i32,
     chars: Peekable<Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     fn new(input: &'a str) -> Self {
-        let lexer =  Lexer { 
+        Lexer { 
             input: &input,
-            read_position: 1, 
             chars: input.chars().peekable(),
-         };
-         return lexer;
+         }
     }
 
     fn read_char(&mut self) -> Option<char> {
-        self.read_position += 1;
-        return self.chars.next();
+		let ch  = match self.chars.next() {
+			Some(ch) => ch,
+			None => ' ',
+		};
+		Some(ch)
     }
 
     fn peek_char(&mut self) -> Option<&char> {
-        return self.chars.peek();
+        self.chars.peek()
     }
 
     fn eat_whitespace(&mut self) {
@@ -37,12 +37,37 @@ impl<'a> Lexer<'a> {
 		}
 	}
 
+	fn read_identifier(&mut self, current_char: char) -> String {
+		let mut ident = String::new();
+		ident.push(current_char);
+		while let Some(&ch) = self.peek_char() {
+			if is_letter(ch) {
+				ident.push(self.read_char().unwrap());
+			} else {
+				break;
+			}
+		}
+		ident
+	}
+
+	fn read_number(&mut self, current_char: char) -> String {
+		let mut ident = String::new();
+		ident.push(current_char);
+		while let Some(&ch) = self.peek_char() {
+			if is_digit(ch) {
+				ident.push(self.read_char().unwrap());
+			} else {
+				break;
+			}
+		}
+		ident
+	}
 
     fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
         let current_char =  match self.read_char() {
             Some(token) => token,
-            None => '0'
+            None => ' ',
         };
 
         let literal = current_char.to_string();
@@ -65,14 +90,30 @@ impl<'a> Lexer<'a> {
             ',' => { Token::new(TokenType::COMMA, literal) }
             '+' => { Token::new(TokenType::PLUS, literal) }
             '-' => { Token::new(TokenType::MINUS, literal) }
-            '0' => { Token::new(TokenType::EOF, literal) }
-            _  => { Token::new(TokenType::ILLEGAL, literal) }
-        }
-    }
+			'|' => { Token::new(TokenType::PIPE, literal) }
+			'*' => { Token::new(TokenType::ASTERISK, literal) }
+			'<' => { Token::new(TokenType::LT, literal) }
+			'>' => { Token::new(TokenType::GT, literal) }
+            ' ' => { Token::new(TokenType::EOF, literal) }
+            _  => {
+				if is_letter(current_char) {
+					Token::new(TokenType::IDENTIFIER, self.read_identifier(current_char).to_string())
+				} else if is_digit(current_char) {
+					Token::new(TokenType::INTEGER, self.read_number(current_char).to_string())
+				} else {
+					Token::new(TokenType::ILLEGAL, literal)
+				}
+			}
+		}
+	}
 }
 
 fn is_letter(ch: char) -> bool {
-    return 'a' <= ch && ch >= 'z' || 'A' <= ch && ch >= 'Z' || ch == '_';
+    return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_';
+}
+
+fn is_digit(ch: char) -> bool {
+	return '0' <= ch && ch <= '9';
 }
 
 #[cfg(test)]
@@ -81,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_next_token<'a>() {
-        let source = "==+(){}  ,;|";
+        let source = "==+(){}  ,;let|965";
 
         let lexer_cases = [
             Token::new(TokenType::EQUALS, "==".to_string()),
@@ -92,8 +133,10 @@ mod tests {
             Token::new(TokenType::RBRACE, "}".to_string()),
             Token::new(TokenType::COMMA, ",".to_string()),       
             Token::new(TokenType::SEMICOLON, ";".to_string()),
-			Token::new(TokenType::ILLEGAL, "|".to_string()),
-            Token::new(TokenType::EOF, "0".to_string())     
+			Token::new(TokenType::IDENTIFIER, "let".to_string()),
+			Token::new(TokenType::PIPE, "|".to_string()),
+			Token::new(TokenType::INTEGER, "965".to_string()),
+            Token::new(TokenType::EOF, " ".to_string())     
         ];
 
         let mut lexer = Lexer::new(source);
