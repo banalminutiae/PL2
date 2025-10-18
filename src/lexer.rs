@@ -8,7 +8,7 @@ pub struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    fn new(input: &'a str) -> Self {
+    pub fn new(input: &'a str) -> Self {
         Lexer { 
             input: &input,
             chars: input.chars().peekable(),
@@ -63,7 +63,7 @@ impl<'a> Lexer<'a> {
 		ident
 	}
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
         let current_char =  match self.read_char() {
             Some(token) => token,
@@ -90,14 +90,30 @@ impl<'a> Lexer<'a> {
             ',' => { Token::new(TokenType::COMMA, literal) }
             '+' => { Token::new(TokenType::PLUS, literal) }
             '-' => { Token::new(TokenType::MINUS, literal) }
-			'!' => { Token::new(TokenType::EXCLAMATION, literal) }
-			'/' => { Token::new(TokenType::FSLASH, literal) }
+			'!' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '=' {
+						self.read_char();
+						return Token::new(TokenType::NOT_EQUALS, "!=".to_string());
+					}
+				}
+				Token::new(TokenType::EXCLAMATION, literal)
+			}
+			'/' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '/' {
+						// TODO: Eat remainder of line once detected.
+						self.read_char();
+						return Token::new(TokenType::COMMENT, "//".to_string());
+					}
+				}
+				Token::new(TokenType::FSLASH, literal) }
 			'|' => { Token::new(TokenType::PIPE, literal) }
 			'*' => { Token::new(TokenType::ASTERISK, literal) }
 			'<' => { Token::new(TokenType::LT, literal) }
 			'>' => { Token::new(TokenType::GT, literal) }
-            ' ' => { Token::new(TokenType::EOF, literal) }
-            _  => {
+            ' ' => { Token::new(TokenType::EOF, " ".to_string()) }
+            _ => {
 				if is_letter(current_char) {
 					let identifier = self.read_identifier(current_char).to_string();
 					Token::new(lookup_identifier(&identifier), identifier)
@@ -124,7 +140,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_next_token<'a>() {
+    fn test_declarations<'a>() {
         let source = r#"
             let x = 15;
             let y = 10;
@@ -175,6 +191,7 @@ mod tests {
 			Token::new(TokenType::IDENTIFIER, "y".to_string()),
 			Token::new(TokenType::RPAREN, ")".to_string()),
             Token::new(TokenType::SEMICOLON, ";".to_string()),
+			Token::new(TokenType::EOF, " ".to_string()),
         ];
 
         let mut lexer = Lexer::new(source);
@@ -185,6 +202,45 @@ mod tests {
             assert_eq!(&actual_token, expected_token);
         }
     }
+
+	#[test]
+	fn test_conditionals<'a>() {
+		let source = r#"
+            if (5 < 10) {
+                return true;
+            } else {
+                return false;
+            }
+        "#;
+
+		let lexer_cases = [
+			Token::new(TokenType::IF, "if".to_string()),
+			Token::new(TokenType::LPAREN, "(".to_string()),
+			Token::new(TokenType::INTEGER, "5".to_string()),
+			Token::new(TokenType::LT, "<".to_string()),
+			Token::new(TokenType::INTEGER, "10".to_string()),
+			Token::new(TokenType::RPAREN, ")".to_string()),
+			Token::new(TokenType::LBRACE, "{".to_string()),
+			Token::new(TokenType::RETURN, "return".to_string()),
+			Token::new(TokenType::TRUE, "true".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+			Token::new(TokenType::RBRACE, "}".to_string()),
+			Token::new(TokenType::ELSE, "else".to_string()),
+			Token::new(TokenType::LBRACE, "{".to_string()),
+			Token::new(TokenType::RETURN, "return".to_string()),
+			Token::new(TokenType::FALSE, "false".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+			Token::new(TokenType::RBRACE, "}".to_string()),
+			Token::new(TokenType::EOF, " ".to_string()),
+		];
+		
+
+		let mut lexer = Lexer::new(source);
+
+		for (_, expected_token) in lexer_cases.iter().enumerate() {
+            let actual_token = lexer.next_token();
+            println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
+            assert_eq!(&actual_token, expected_token);
+		}
+	}
 }
-
-

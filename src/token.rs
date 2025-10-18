@@ -17,6 +17,7 @@ pub enum TokenType {
     INTEGER,
     ASSIGN,
     EQUALS,
+	NOT_EQUALS,
     PLUS,
     MINUS,
 	EXCLAMATION,
@@ -24,6 +25,7 @@ pub enum TokenType {
 	LT,
 	GT,
 	FSLASH,
+	COMMENT,
 	PIPE,
     COMMA,
     SEMICOLON,
@@ -33,12 +35,22 @@ pub enum TokenType {
     RBRACE,
     FUNCTION,
     LET,
+	TRUE,
+	FALSE,
+	IF,
+	ELSE,
+	RETURN,
     EOF,
 }
 
 static KEYWORDS: &'static [(&'static str, TokenType)] = &[
 	("fn", TokenType::FUNCTION),
 	("let", TokenType::LET),
+	("true", TokenType::TRUE),
+	("false", TokenType::FALSE),
+	("if", TokenType::IF),
+	("else", TokenType::ELSE),
+	("return", TokenType::RETURN),
 ];
 
 pub fn lookup_identifier(literal: &str) -> TokenType {
