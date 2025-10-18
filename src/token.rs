@@ -12,7 +12,6 @@ impl Token {
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
     IDENTIFIER,
-    LITERAL,
     ILLEGAL,
     INTEGER,
     ASSIGN,

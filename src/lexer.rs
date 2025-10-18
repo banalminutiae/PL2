@@ -3,14 +3,12 @@ use std::iter::{ Peekable};
 use std::str::Chars;
 
 pub struct Lexer<'a> {
-    input: &'a str,
     chars: Peekable<Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Lexer { 
-            input: &input,
             chars: input.chars().peekable(),
          }
     }
@@ -30,6 +28,16 @@ impl<'a> Lexer<'a> {
     fn eat_whitespace(&mut self) {
 		while let Some(&ch) = self.peek_char() {
 			if ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n' {
+				self.read_char().unwrap();
+			} else {
+				break;
+			}
+		}
+	}
+
+	fn eat_until_newline(&mut self) {
+		while let Some(&ch) = self.peek_char() {
+			if ch != '\n' {
 				self.read_char().unwrap();
 			} else {
 				break;
@@ -102,8 +110,8 @@ impl<'a> Lexer<'a> {
 			'/' => {
 				if let Some(&peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
-						// TODO: Eat remainder of line once detected.
 						self.read_char();
+						self.eat_until_newline();
 						return Token::new(TokenType::COMMENT, "//".to_string());
 					}
 				}
@@ -234,6 +242,31 @@ mod tests {
 			Token::new(TokenType::EOF, " ".to_string()),
 		];
 		
+
+		let mut lexer = Lexer::new(source);
+
+		for (_, expected_token) in lexer_cases.iter().enumerate() {
+            let actual_token = lexer.next_token();
+            println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
+            assert_eq!(&actual_token, expected_token);
+		}
+	}
+
+	#[test]
+	fn test_comment<'a>() {
+		let source = r#"
+            // You should never read this
+            let x = 0;
+        "#;
+
+		let lexer_cases = [
+			Token::new(TokenType::COMMENT, "//".to_string()),
+            Token::new(TokenType::LET, "let".to_string()),
+            Token::new(TokenType::IDENTIFIER, "x".to_string()),
+            Token::new(TokenType::ASSIGN, "=".to_string()),
+            Token::new(TokenType::INTEGER, "0".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+		];
 
 		let mut lexer = Lexer::new(source);
 
