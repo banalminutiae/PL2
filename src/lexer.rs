@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{Token, TokenType, lookup_identifier};
 use std::iter::{ Peekable};
 use std::str::Chars;
 
@@ -70,7 +70,7 @@ impl<'a> Lexer<'a> {
             None => ' ',
         };
 
-        let literal = current_char.to_string();
+        let mut literal = current_char.to_string();
 
         match current_char {
             '=' => {
@@ -90,6 +90,8 @@ impl<'a> Lexer<'a> {
             ',' => { Token::new(TokenType::COMMA, literal) }
             '+' => { Token::new(TokenType::PLUS, literal) }
             '-' => { Token::new(TokenType::MINUS, literal) }
+			'!' => { Token::new(TokenType::EXCLAMATION, literal) }
+			'/' => { Token::new(TokenType::FSLASH, literal) }
 			'|' => { Token::new(TokenType::PIPE, literal) }
 			'*' => { Token::new(TokenType::ASTERISK, literal) }
 			'<' => { Token::new(TokenType::LT, literal) }
@@ -97,7 +99,8 @@ impl<'a> Lexer<'a> {
             ' ' => { Token::new(TokenType::EOF, literal) }
             _  => {
 				if is_letter(current_char) {
-					Token::new(TokenType::IDENTIFIER, self.read_identifier(current_char).to_string())
+					let identifier = self.read_identifier(current_char).to_string();
+					Token::new(lookup_identifier(&identifier), identifier)
 				} else if is_digit(current_char) {
 					Token::new(TokenType::INTEGER, self.read_number(current_char).to_string())
 				} else {
@@ -122,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_next_token<'a>() {
-        let source = "==+(){}  ,;let|965";
+        let source = "==+(){}  ,;let|965hh";
 
         let lexer_cases = [
             Token::new(TokenType::EQUALS, "==".to_string()),
@@ -133,9 +136,10 @@ mod tests {
             Token::new(TokenType::RBRACE, "}".to_string()),
             Token::new(TokenType::COMMA, ",".to_string()),       
             Token::new(TokenType::SEMICOLON, ";".to_string()),
-			Token::new(TokenType::IDENTIFIER, "let".to_string()),
+			Token::new(TokenType::LET, "let".to_string()),
 			Token::new(TokenType::PIPE, "|".to_string()),
 			Token::new(TokenType::INTEGER, "965".to_string()),
+			Token::new(TokenType::IDENTIFIER, "hh".to_string()),
             Token::new(TokenType::EOF, " ".to_string())     
         ];
 
