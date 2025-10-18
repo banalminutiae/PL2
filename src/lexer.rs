@@ -70,7 +70,7 @@ impl<'a> Lexer<'a> {
             None => ' ',
         };
 
-        let mut literal = current_char.to_string();
+        let literal = current_char.to_string();
 
         match current_char {
             '=' => {
@@ -125,27 +125,61 @@ mod tests {
 
     #[test]
     fn test_next_token<'a>() {
-        let source = "==+(){}  ,;let|965hh";
+        let source = r#"
+            let x = 15;
+            let y = 10;
 
+            let add = fn (x, y) {
+                x + y;
+            };
+
+            let result = add(x, y);
+        "#;
         let lexer_cases = [
-            Token::new(TokenType::EQUALS, "==".to_string()),
-            Token::new(TokenType::PLUS, "+".to_string()),
-            Token::new(TokenType::LPAREN, "(".to_string()),
-            Token::new(TokenType::RPAREN, ")".to_string()),
-            Token::new(TokenType::LBRACE, "{".to_string()),
-            Token::new(TokenType::RBRACE, "}".to_string()),
-            Token::new(TokenType::COMMA, ",".to_string()),       
-            Token::new(TokenType::SEMICOLON, ";".to_string()),
+            Token::new(TokenType::LET, "let".to_string()),
+            Token::new(TokenType::IDENTIFIER, "x".to_string()),
+            Token::new(TokenType::ASSIGN, "=".to_string()),
+            Token::new(TokenType::INTEGER, "15".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+			
 			Token::new(TokenType::LET, "let".to_string()),
-			Token::new(TokenType::PIPE, "|".to_string()),
-			Token::new(TokenType::INTEGER, "965".to_string()),
-			Token::new(TokenType::IDENTIFIER, "hh".to_string()),
-            Token::new(TokenType::EOF, " ".to_string())     
+            Token::new(TokenType::IDENTIFIER, "y".to_string()),
+            Token::new(TokenType::ASSIGN, "=".to_string()),
+            Token::new(TokenType::INTEGER, "10".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+			
+			Token::new(TokenType::LET, "let".to_string()),
+			Token::new(TokenType::IDENTIFIER, "add".to_string()),
+			Token::new(TokenType::ASSIGN, "=".to_string()),
+			Token::new(TokenType::FUNCTION, "fn".to_string()),
+			Token::new(TokenType::LPAREN, "(".to_string()),
+            Token::new(TokenType::IDENTIFIER, "x".to_string()),
+			Token::new(TokenType::COMMA, ",".to_string()),
+			Token::new(TokenType::IDENTIFIER, "y".to_string()),
+			Token::new(TokenType::RPAREN, ")".to_string()),
+            Token::new(TokenType::LBRACE, "{".to_string()),
+			Token::new(TokenType::IDENTIFIER, "x".to_string()),
+			Token::new(TokenType::PLUS, "+".to_string()),
+			Token::new(TokenType::IDENTIFIER, "y".to_string()),
+			Token::new(TokenType::SEMICOLON, ";".to_string()),
+            Token::new(TokenType::RBRACE, "}".to_string()),
+            Token::new(TokenType::SEMICOLON, ";".to_string()),
+
+			Token::new(TokenType::LET, "let".to_string()),
+			Token::new(TokenType::IDENTIFIER, "result".to_string()),
+			Token::new(TokenType::ASSIGN, "=".to_string()),
+			Token::new(TokenType::IDENTIFIER, "add".to_string()),
+			Token::new(TokenType::LPAREN, "(".to_string()),
+            Token::new(TokenType::IDENTIFIER, "x".to_string()),
+			Token::new(TokenType::COMMA, ",".to_string()),
+			Token::new(TokenType::IDENTIFIER, "y".to_string()),
+			Token::new(TokenType::RPAREN, ")".to_string()),
+            Token::new(TokenType::SEMICOLON, ";".to_string()),
         ];
 
         let mut lexer = Lexer::new(source);
 
-        for (index, expected_token) in lexer_cases.iter().enumerate() {
+        for (_, expected_token) in lexer_cases.iter().enumerate() {
             let actual_token = lexer.next_token();
             println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
             assert_eq!(&actual_token, expected_token);
