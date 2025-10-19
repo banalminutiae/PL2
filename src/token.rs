@@ -9,6 +9,7 @@ impl Token {
     }
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
     IDENTIFIER,
@@ -22,11 +23,19 @@ pub enum TokenType {
 	EXCLAMATION,
 	ASTERISK,
 	LT,
+	LTEQ,
 	GT,
+	GTEQ,
 	FSLASH,
 	COMMENT,
 	PIPE,
+	OR,
+	AMP,
+	AND,
     COMMA,
+	CARET,
+	TILDE,
+	MOD,
     SEMICOLON,
     LPAREN,
     RPAREN,
@@ -38,6 +47,8 @@ pub enum TokenType {
 	FALSE,
 	IF,
 	ELSE,
+	WHILE,
+	FOR,
 	RETURN,
     EOF,
 }
@@ -49,6 +60,8 @@ static KEYWORDS: &'static [(&'static str, TokenType)] = &[
 	("false", TokenType::FALSE),
 	("if", TokenType::IF),
 	("else", TokenType::ELSE),
+	("while", TokenType::WHILE),
+	("for", TokenType::FOR),
 	("return", TokenType::RETURN),
 ];
 

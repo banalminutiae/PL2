@@ -4,7 +4,7 @@ use crate::token::{Token, TokenType};
 use crate::lexer::Lexer;
 
 pub fn start() {
-	println!(">> Language (name TBD), v0.0.1");
+	println!(">> PL2, v0.0.1");
 	print!(">>");
 	io::stdout().flush().unwrap();
 
