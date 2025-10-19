@@ -1,5 +1,5 @@
 use crate::token::{Token, TokenType, lookup_identifier};
-use std::iter::{ Peekable};
+use std::iter::{Peekable};
 use std::str::Chars;
 
 pub struct Lexer<'a> {
@@ -8,7 +8,7 @@ pub struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Lexer { 
+        Self { 
             chars: input.chars().peekable(),
         }
     }
@@ -81,7 +81,22 @@ impl<'a> Lexer<'a> {
         let literal = current_char.to_string();
 
         match current_char {
-            '=' => {
+            '{' => { Token::new(TokenType::LBRACE, literal) }
+            '}' => { Token::new(TokenType::RBRACE, literal) }
+            '(' => { Token::new(TokenType::LPAREN, literal) }
+            ')' => { Token::new(TokenType::RPAREN, literal) }
+			'[' => { Token::new(TokenType::LSQ_BRACKET, literal) }
+			']' => { Token::new(TokenType::RSQ_BRACKET, literal) }
+			'%' => { Token::new(TokenType::MOD, literal) }
+            ':' => { Token::new(TokenType::COLON, literal) }			
+            ';' => { Token::new(TokenType::SEMICOLON, literal) }
+            ',' => { Token::new(TokenType::COMMA, literal) }
+			'^' => { Token::new(TokenType::CARET, literal) }
+			'~' => { Token::new(TokenType::TILDE, literal) }
+            '+' => { Token::new(TokenType::PLUS, literal) }
+            '-' => { Token::new(TokenType::MINUS, literal) }
+			'*' => { Token::new(TokenType::ASTERISK, literal) }
+			'=' => {
                 if let Some(&peeked_char) = self.peek_char() {
                     if peeked_char == '=' {
                         self.read_char();
@@ -90,17 +105,6 @@ impl<'a> Lexer<'a> {
                 }
                 Token::new(TokenType::ASSIGN, "=".to_string())
             }
-            '{' => { Token::new(TokenType::LBRACE, literal) }
-            '}' => { Token::new(TokenType::RBRACE, literal) }
-            '(' => { Token::new(TokenType::LPAREN, literal) }
-            ')' => { Token::new(TokenType::RPAREN, literal) }
-			'%' => { Token::new(TokenType::MOD, literal) }
-            ';' => { Token::new(TokenType::SEMICOLON, literal) }
-            ',' => { Token::new(TokenType::COMMA, literal) }
-			'^' => { Token::new(TokenType::CARET, literal) }
-			'~' => { Token::new(TokenType::TILDE, literal) }
-            '+' => { Token::new(TokenType::PLUS, literal) }
-            '-' => { Token::new(TokenType::MINUS, literal) }
 			'!' => {
 				if let Some(&peeked_char) = self.peek_char() {
 					if peeked_char == '=' {
@@ -118,7 +122,7 @@ impl<'a> Lexer<'a> {
 						return Token::new(TokenType::COMMENT, "//".to_string());
 					}
 				}
-				Token::new(TokenType::FSLASH, literal) }
+				Token::new(TokenType::DIVIDE, literal) }
 			'|' => {
 				if let Some(&peeked_char) = self.peek_char() {
 					if peeked_char == '|' {
@@ -137,7 +141,6 @@ impl<'a> Lexer<'a> {
 				}
 				Token::new(TokenType::AMP, literal)
 			}
-			'*' => { Token::new(TokenType::ASTERISK, literal) }
 			'<' => {
 				if let Some(&peeked_char) = self.peek_char() {
 					if peeked_char == '=' {
