@@ -10,7 +10,7 @@ impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Lexer { 
             chars: input.chars().peekable(),
-         }
+        }
     }
 
     fn read_char(&mut self) -> Option<char> {
@@ -94,8 +94,11 @@ impl<'a> Lexer<'a> {
             '}' => { Token::new(TokenType::RBRACE, literal) }
             '(' => { Token::new(TokenType::LPAREN, literal) }
             ')' => { Token::new(TokenType::RPAREN, literal) }
+			'%' => { Token::new(TokenType::MOD, literal) }
             ';' => { Token::new(TokenType::SEMICOLON, literal) }
             ',' => { Token::new(TokenType::COMMA, literal) }
+			'^' => { Token::new(TokenType::CARET, literal) }
+			'~' => { Token::new(TokenType::TILDE, literal) }
             '+' => { Token::new(TokenType::PLUS, literal) }
             '-' => { Token::new(TokenType::MINUS, literal) }
 			'!' => {
@@ -116,10 +119,42 @@ impl<'a> Lexer<'a> {
 					}
 				}
 				Token::new(TokenType::FSLASH, literal) }
-			'|' => { Token::new(TokenType::PIPE, literal) }
+			'|' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '|' {
+						self.read_char();
+						return Token::new(TokenType::OR, "||".to_string());
+					}
+				}
+				Token::new(TokenType::PIPE, literal)
+			}
+			'&' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '&' {
+						self.read_char();
+						return Token::new(TokenType::AND, "&&".to_string());
+					}
+				}
+				Token::new(TokenType::AMP, literal)
+			}
 			'*' => { Token::new(TokenType::ASTERISK, literal) }
-			'<' => { Token::new(TokenType::LT, literal) }
-			'>' => { Token::new(TokenType::GT, literal) }
+			'<' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '=' {
+						self.read_char();
+						return Token::new(TokenType::LTEQ, "<=".to_string());
+					}
+				}
+				Token::new(TokenType::LT, literal)
+			}
+			'>' => {
+				if let Some(&peeked_char) = self.peek_char() {
+					if peeked_char == '=' {
+						self.read_char();
+						return Token::new(TokenType::GTEQ, "<=".to_string());
+					}
+				}
+				Token::new(TokenType::GT, literal) }
             ' ' => { Token::new(TokenType::EOF, " ".to_string()) }
             _ => {
 				if is_letter(current_char) {
@@ -214,7 +249,7 @@ mod tests {
 	#[test]
 	fn test_conditionals<'a>() {
 		let source = r#"
-            if (5 < 10) {
+            if (5 <= 10) {
                 return true;
             } else {
                 return false;
@@ -225,7 +260,7 @@ mod tests {
 			Token::new(TokenType::IF, "if".to_string()),
 			Token::new(TokenType::LPAREN, "(".to_string()),
 			Token::new(TokenType::INTEGER, "5".to_string()),
-			Token::new(TokenType::LT, "<".to_string()),
+			Token::new(TokenType::LTEQ, "<=".to_string()),
 			Token::new(TokenType::INTEGER, "10".to_string()),
 			Token::new(TokenType::RPAREN, ")".to_string()),
 			Token::new(TokenType::LBRACE, "{".to_string()),
