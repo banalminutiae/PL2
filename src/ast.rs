@@ -4,7 +4,8 @@ pub trait Node {
 	fn token_literal(&self) -> &str;
 }
 
-enum Statement {
+#[derive(Debug)]
+pub enum Statement {
 	Let(LetStatement),
 	Return(ReturnStatement),
 	Expression(ExpressionStatement),
@@ -20,7 +21,8 @@ impl Node for Statement {
 	}
 }
 
-enum Expression {
+#[derive(Debug)]
+pub enum Expression {
 	// Anything that resolves to a value. Bools, len(), string literals etc.
 	Identifier(Identifier),
 	IntegerLiteral(Identifier),
@@ -35,18 +37,22 @@ impl Node for Expression {
 	}
 }
 
-struct Identifier {
+#[derive(Debug)]
+pub struct Identifier {
+	pub token: Token,
 	pub value: String,
 }
 
-struct IntegerLiteral {
+#[derive(Debug)]
+pub struct IntegerLiteral {
 	pub value: i64,
 }
 
-struct LetStatement {
+#[derive(Debug)]
+pub struct LetStatement {
 	pub token: Token,
 	pub name: Identifier,
-	pub value: Expression,
+	// pub value: Expression,
 }
 
 impl LetStatement {
@@ -55,6 +61,7 @@ impl LetStatement {
 	}
 }	
 
+#[derive(Debug)]
 struct ReturnStatement {
 	pub token: Token,
 	pub value: Expression,
@@ -65,7 +72,8 @@ impl ReturnStatement {
 		"return"
 	}
 }
-	
+
+#[derive(Debug)]
 struct ExpressionStatement {
 	pub expression: Expression,
 }
@@ -76,7 +84,8 @@ impl ExpressionStatement {
 	}
 }
 
-struct Program {
+#[derive(Debug)]
+pub struct Program {
 	pub statements: Vec<Statement>,
 }
 
