@@ -38,6 +38,7 @@ impl Node for Expression {
 }
 
 #[derive(Debug)]
+// variable name of let x = 5, x is represented by the token.
 pub struct Identifier {
 	pub token: Token,
 	pub value: String,
@@ -49,6 +50,7 @@ pub struct IntegerLiteral {
 }
 
 #[derive(Debug)]
+// Whole statement e.g. let x = 5;
 pub struct LetStatement {
 	pub token: Token,
 	pub name: Identifier,
@@ -62,9 +64,9 @@ impl LetStatement {
 }	
 
 #[derive(Debug)]
-struct ReturnStatement {
+pub struct ReturnStatement {
 	pub token: Token,
-	pub value: Expression,
+	// pub value: Expression,
 }
 
 impl ReturnStatement {

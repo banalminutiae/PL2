@@ -1,11 +1,12 @@
 use crate::token::{Token, TokenType};
 use crate::lexer::{Lexer};
-use crate::ast::{Program, Statement, LetStatement, Identifier};
+use crate::ast::{Program, Statement, LetStatement, ReturnStatement, Identifier};
 
 pub struct Parser<'a> {
 	lexer: Lexer<'a>,
 	curr_token: Token,
 	next_token: Token,
+	errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -13,9 +14,10 @@ impl<'a> Parser<'a> {
 		let curr_token = lexer.next_token();
 		let next_token = lexer.next_token();
 		Self {
-			lexer: lexer.clone(),
+			lexer,
 			curr_token,
 			next_token,
+			errors: Vec::new(),
 		}
 	}
 
@@ -41,7 +43,7 @@ impl<'a> Parser<'a> {
 				self.parse_let_statement().map(Statement::Let)
 			}
 			TokenType::RETURN => {
-				None
+				self.parse_return_statement().map(Statement::Return)
 			}
 			_ => None
 		}
@@ -75,11 +77,30 @@ impl<'a> Parser<'a> {
 		Some(statement)
 	}
 
+	fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
+		let statement = ReturnStatement {
+			token: self.curr_token.clone(),
+		};
+
+		// Temporarily skip expression parsing
+		while self.curr_token.token_type != TokenType::SEMICOLON {
+			self.next_token()
+		}
+
+		Some(statement)
+	}
+
+	fn peek_error(&mut self, token_type: TokenType) {
+		let message = format!("Expected next token to be {:?}, got {:?} instead", token_type, self.next_token.token_type);
+		self.errors.push(message);
+	}
+
 	fn expect_peek(&mut self, expected_type: TokenType) -> bool {
 		if self.next_token.token_type == expected_type {
 			self.next_token();
 			true
 		} else {
+			self.peek_error(expected_type);
 			false
 		}
 	}
@@ -92,7 +113,7 @@ mod tests {
 	use super::*;
 	
 	#[test]
-	fn test_parser() {
+	fn test_let_statement() {
 		let source = r#"
            let x = 5;
            let y = 10;
@@ -104,7 +125,38 @@ mod tests {
 		let mut parser = Parser::new(lexer);
 
 		let program = parser.parse_program();
+		assert_eq!(parser.errors.len(), 0);
 		assert_eq!(program.statements.len(), 3);
+		println!("{:#?}", program.statements);
+	}
+
+	#[test]
+	fn test_return_statement() {
+		let source = r#"
+            return 5;
+        "#;
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:?}", program.statements);
+		assert_eq!(parser.errors.len(), 0);
+		assert_eq!(program.statements.len(), 1);
+	}
+
+	#[test]
+	fn test_parser_error() {
+		let source = r#"
+            let = 5;
+            let 828282;
+        "#;
+
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		assert_eq!(parser.errors.len(), 2);
+		println!("{:?}", parser.errors);
 	}
 }
 
