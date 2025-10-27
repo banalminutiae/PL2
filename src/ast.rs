@@ -81,7 +81,7 @@ impl fmt::Display for Identifier {
 pub struct LetStatement {
     pub token: Token,
     pub name: Identifier,
-    pub value: Expression,
+    // pub value: Expression,
 }
 
 impl LetStatement {
@@ -92,14 +92,15 @@ impl LetStatement {
 
 impl fmt::Display for LetStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "let {} = {}", self.name, self.value)
+		// write!(f, "let {} = {}", self.name)
+		write!(f, "let")
 	}
 }
 	
 #[derive(Debug)]
 pub struct ReturnStatement {
     pub token: Token,
-    pub value: Expression,
+    // pub value: Expression,
 }
 
 impl ReturnStatement {
@@ -110,7 +111,7 @@ impl ReturnStatement {
 
 impl fmt::Display for ReturnStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "return {}", self.value)
+		write!(f, "return {}", "return")
 	}
 }
 
