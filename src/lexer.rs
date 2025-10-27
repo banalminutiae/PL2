@@ -4,31 +4,38 @@ use std::str::Chars;
 
 #[derive(Clone)]
 pub struct Lexer<'a> {
-    chars: Peekable<Chars<'a>>,
+	input: &'a str,
+	cursor: usize,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { 
-            chars: input.chars().peekable(),
+        Self {
+			input,
+			cursor: 0,
         }
     }
 
     fn read_char(&mut self) -> Option<char> {
-		let ch  = match self.chars.next() {
-			Some(ch) => ch,
-			None => ' ',
-		};
-		Some(ch)
-    }
+		let remaining_input = &self.input[self.cursor..];
 
-    fn peek_char(&mut self) -> Option<&char> {
-        self.chars.peek()
+        let mut chars = remaining_input.chars();
+
+		if let Some(c) = chars.next() {
+            self.cursor += c.len_utf8();
+            Some(c)
+        } else {
+            None
+        }
+	} 
+
+    fn peek_char(&mut self) -> Option<char> {
+        self.input[self.cursor..].chars().next()
     }
 
     fn eat_whitespace(&mut self) {
-		while let Some(&ch) = self.peek_char() {
-			if ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n' {
+		while let Some(ch) = self.peek_char() {
+			if ch.is_whitespace() {
 				self.read_char().unwrap();
 			} else {
 				break;
@@ -37,7 +44,7 @@ impl<'a> Lexer<'a> {
 	}
 
 	fn eat_until_newline(&mut self) {
-		while let Some(&ch) = self.peek_char() {
+		while let Some(ch) = self.peek_char() {
 			if ch != '\n' {
 				self.read_char().unwrap();
 			} else {
@@ -49,7 +56,7 @@ impl<'a> Lexer<'a> {
 	fn read_identifier(&mut self, current_char: char) -> String {
 		let mut ident = String::new();
 		ident.push(current_char);
-		while let Some(&ch) = self.peek_char() {
+		while let Some(ch) = self.peek_char() {
 			if is_letter(ch) {
 				ident.push(self.read_char().unwrap());
 			} else {
@@ -62,7 +69,7 @@ impl<'a> Lexer<'a> {
 	fn read_number(&mut self, current_char: char) -> String {
 		let mut ident = String::new();
 		ident.push(current_char);
-		while let Some(&ch) = self.peek_char() {
+		while let Some(ch) = self.peek_char() {
 			if is_digit(ch) {
 				ident.push(self.read_char().unwrap());
 			} else {
@@ -98,7 +105,7 @@ impl<'a> Lexer<'a> {
             '-' => { Token::new(TokenType::MINUS, literal) }
 			'*' => { Token::new(TokenType::ASTERISK, literal) }
 			'=' => {
-                if let Some(&peeked_char) = self.peek_char() {
+                if let Some(peeked_char) = self.peek_char() {
                     if peeked_char == '=' {
                         self.read_char();
                         return Token::new(TokenType::EQUALS, "==".to_string());
@@ -107,7 +114,7 @@ impl<'a> Lexer<'a> {
                 Token::new(TokenType::ASSIGN, "=".to_string())
             }
 			'!' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '=' {
 						self.read_char();
 						return Token::new(TokenType::NOT_EQUALS, "!=".to_string());
@@ -116,7 +123,7 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::EXCLAMATION, literal)
 			}
 			'/' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
 						self.read_char();
 						self.eat_until_newline();
@@ -125,7 +132,7 @@ impl<'a> Lexer<'a> {
 				}
 				Token::new(TokenType::DIVIDE, literal) }
 			'|' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '|' {
 						self.read_char();
 						return Token::new(TokenType::OR, "||".to_string());
@@ -134,7 +141,7 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::PIPE, literal)
 			}
 			'&' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '&' {
 						self.read_char();
 						return Token::new(TokenType::AND, "&&".to_string());
@@ -143,7 +150,7 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::AMP, literal)
 			}
 			'<' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '=' {
 						self.read_char();
 						return Token::new(TokenType::LTEQ, "<=".to_string());
@@ -152,7 +159,7 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::LT, literal)
 			}
 			'>' => {
-				if let Some(&peeked_char) = self.peek_char() {
+				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '=' {
 						self.read_char();
 						return Token::new(TokenType::GTEQ, "<=".to_string());
