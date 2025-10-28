@@ -73,6 +73,23 @@ impl<'a> Lexer<'a> {
 		self.input[start_pos..self.cursor].to_string()
 	}
 
+	fn read_compound_token(
+		&mut self,
+		expected: char,
+		compound_type: TokenType,
+		compound_literal: String,
+		single_type: TokenType,
+		single_literal: String,
+	) -> Token {
+		if let Some(peeked_char) = self.peek_char() {
+			if peeked_char == expected {
+				self.read_char();
+				return Token::new(compound_type, compound_literal);
+			}
+		}
+		Token::new(single_type, single_literal)
+	}
+
     pub fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
 		let start_pos = self.cursor;
@@ -99,24 +116,12 @@ impl<'a> Lexer<'a> {
             '+' => { Token::new(TokenType::PLUS, literal) }
             '-' => { Token::new(TokenType::MINUS, literal) }
 			'*' => { Token::new(TokenType::ASTERISK, literal) }
-			'=' => {
-                if let Some(peeked_char) = self.peek_char() {
-                    if peeked_char == '=' {
-                        self.read_char();
-                        return Token::new(TokenType::EQUALS, "==".to_string());
-                    } 
-                }
-                Token::new(TokenType::ASSIGN, "=".to_string())
-            }
-			'!' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '=' {
-						self.read_char();
-						return Token::new(TokenType::NOT_EQUALS, "!=".to_string());
-					}
-				}
-				Token::new(TokenType::EXCLAMATION, literal)
-			}
+			'=' => { self.read_compound_token('=', TokenType::EQUALS, "==".to_string(), TokenType::ASSIGN, "=".to_string()) }
+			'!' => { self.read_compound_token('=', TokenType::NOT_EQUALS, "!=".to_string(), TokenType::EXCLAMATION, "!".to_string()) }
+			'|' => { self.read_compound_token('|', TokenType::OR, "||".to_string(), TokenType::PIPE, "|".to_string()) }
+			'&' => { self.read_compound_token('&', TokenType::AND, "&&".to_string(), TokenType::AMP, "&".to_string()) }
+			'<' => { self.read_compound_token('=', TokenType::LTEQ, "<=".to_string(), TokenType::LT, "<".to_string()) }
+			'<' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }			
 			'/' => {
 				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
@@ -125,42 +130,8 @@ impl<'a> Lexer<'a> {
 						return Token::new(TokenType::COMMENT, "//".to_string());
 					}
 				}
-				Token::new(TokenType::DIVIDE, literal) }
-			'|' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '|' {
-						self.read_char();
-						return Token::new(TokenType::OR, "||".to_string());
-					}
-				}
-				Token::new(TokenType::PIPE, literal)
+				Token::new(TokenType::DIVIDE, literal)
 			}
-			'&' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '&' {
-						self.read_char();
-						return Token::new(TokenType::AND, "&&".to_string());
-					}
-				}
-				Token::new(TokenType::AMP, literal)
-			}
-			'<' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '=' {
-						self.read_char();
-						return Token::new(TokenType::LTEQ, "<=".to_string());
-					}
-				}
-				Token::new(TokenType::LT, literal)
-			}
-			'>' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '=' {
-						self.read_char();
-						return Token::new(TokenType::GTEQ, "<=".to_string());
-					}
-				}
-				Token::new(TokenType::GT, literal) }
             ' ' => { Token::new(TokenType::EOF, " ".to_string()) }
             _ => {
 				if is_letter(current_char) {
@@ -258,7 +229,7 @@ mod tests {
             if (5 <= 10) {
                 return true;
             } else {
-                return false;
+                return !false;
             }
         "#;
 
@@ -277,6 +248,7 @@ mod tests {
 			Token::new(TokenType::ELSE, "else".to_string()),
 			Token::new(TokenType::LBRACE, "{".to_string()),
 			Token::new(TokenType::RETURN, "return".to_string()),
+			Token::new(TokenType::EXCLAMATION, "!".to_string()),
 			Token::new(TokenType::FALSE, "false".to_string()),
 			Token::new(TokenType::SEMICOLON, ";".to_string()),
 			Token::new(TokenType::RBRACE, "}".to_string()),
