@@ -39,7 +39,7 @@ impl fmt::Display for Statement {
 pub struct LetStatement {
     pub token: Token,
     pub name: Identifier,
-    // pub value: Expression,
+    pub value: Expression,
 }
 
 impl LetStatement {
@@ -50,14 +50,14 @@ impl LetStatement {
 
 impl fmt::Display for LetStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "let {} = {}", self.name, self.name)
+		write!(f, "let {} = {}", self.name, self.value)
 	}
 }
-	
+
 #[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
     pub token: Token,
-    // pub value: Expression,
+    pub value: Expression,
 }
 
 impl ReturnStatement {
@@ -68,7 +68,7 @@ impl ReturnStatement {
 
 impl fmt::Display for ReturnStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "return {}", "return")
+		write!(f, "return {}", self.value)
 	}
 }
 
@@ -99,6 +99,7 @@ pub enum Expression {
     // function calls, prefix and postifx operators, and comparisons are also expressions
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
+	PrefixExpression(Box<PrefixExpression>),
 }
 
 impl Node for Expression {
@@ -106,6 +107,7 @@ impl Node for Expression {
         match self {
             Expression::Identifier(ident) => &ident.value,
             Expression::IntegerLiteral(_) => "int",
+			Expression::PrefixExpression(pe) => "who cares",
         }
     }
 }
@@ -114,7 +116,8 @@ impl fmt::Display for Expression {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Expression::Identifier(ident) => write!(f, "{}", ident),
-			Expression::IntegerLiteral(il) => write!(f, "{}", il), 
+			Expression::IntegerLiteral(il) => write!(f, "{}", il),
+			Expression::PrefixExpression(pe) => write!(f, "{}", pe),
 		}
 	}
 }
@@ -141,6 +144,19 @@ pub struct IntegerLiteral {
 impl fmt::Display for IntegerLiteral {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}", self.value)
+	}
+}
+
+#[derive(Debug, PartialEq)]
+pub struct PrefixExpression {
+	pub token: Token,
+	pub operator: String,
+	pub rhs: Expression,
+}
+
+impl fmt::Display for PrefixExpression {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}{}", self.operator, self.rhs)
 	}
 }
 

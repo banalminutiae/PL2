@@ -65,37 +65,48 @@ impl<'a> Parser<'a> {
             return None;
         }
 
-        let statement = LetStatement {
-            token: current_token.clone(),
-            name: Identifier {
-                token: self.curr_token.clone(),
-                value: self.curr_token.literal.clone(),
-            },
-            // Expression here later
-        };
 
         if !self.peek_and_consume_on_match(TokenType::ASSIGN) {
             return None;
         }
 
-        // Temporarily skip expression parsing
-        while self.curr_token.token_type != TokenType::SEMICOLON {
-            self.next_token()
-        }
+		self.next_token();
+
+		let value = self.parse_expression(Precedence::LOWEST);
+
+		let statement = LetStatement {
+            token: current_token.clone(),
+            name: Identifier {
+                token: self.curr_token.clone(),
+                value: self.curr_token.literal.clone(),
+            },
+			value: value?,
+        };
+
+		
+		if self.peek_token_is(TokenType::SEMICOLON) {
+			self.next_token();
+		}
 
         Some(statement)
     }
 
     fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
+		let current_token = self.curr_token.clone();
+
+		self.next_token();
+		
+		let return_value = self.parse_expression(Precedence::LOWEST);
+
+		if self.peek_token_is(TokenType::SEMICOLON) {
+			self.next_token();
+		}
+		
         let statement = ReturnStatement {
             token: self.curr_token.clone(),
+			value: return_value?,
         };
-
-        // Temporarily skip expression parsing
-        while self.curr_token.token_type != TokenType::SEMICOLON {
-            self.next_token()
-        }
-
+		
         Some(statement)
     }
 
