@@ -5,14 +5,14 @@ pub trait Node {
     fn token_literal(&self) -> &str;
 }
 
-#[derive(Debug)]
+// Statement ------------------------------------------------------------------------------
+
+#[derive(Debug, PartialEq)]
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
 }
-
-// Statement ------------------------------------------------------------------------------
 
 impl Node for Statement {
     fn token_literal(&self) -> &str {
@@ -34,7 +34,7 @@ impl fmt::Display for Statement {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 // Whole statement e.g. let x = 5;
 pub struct LetStatement {
     pub token: Token,
@@ -54,7 +54,7 @@ impl fmt::Display for LetStatement {
 	}
 }
 	
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
     pub token: Token,
     // pub value: Expression,
@@ -72,7 +72,7 @@ impl fmt::Display for ReturnStatement {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ExpressionStatement {
 	pub token: Token,
 	pub expression: Expression
@@ -92,7 +92,7 @@ impl fmt::Display for ExpressionStatement {
 
 // Expression -----------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Expression {
     // Anything that resolves to a value. Bools, len(), string literals etc.
     // Ifs and loops can go here because that'd be coo
@@ -119,7 +119,7 @@ impl fmt::Display for Expression {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 // variable name of let x = 5, x is represented by the token.
 pub struct Identifier {
     pub token: Token,
@@ -132,7 +132,7 @@ impl fmt::Display for Identifier {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct IntegerLiteral {
 	pub token: Token,
     pub value: i64,

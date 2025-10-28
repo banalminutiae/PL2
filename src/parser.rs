@@ -165,7 +165,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+	
     #[test]
     fn test_let_statement() {
         let source = r#"
@@ -193,7 +193,7 @@ mod tests {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program();
-        println!("{:?}", program.statements);
+        println!("{:#?}", program.statements);
         assert_eq!(parser.errors.len(), 0);
         assert_eq!(program.statements.len(), 1);
     }
@@ -210,7 +210,7 @@ mod tests {
 
         let _ = parser.parse_program();
         assert_eq!(parser.errors.len(), 2);
-        println!("{:?}", parser.errors);
+        println!("{:#?}", parser.errors);
     }
 
 	#[test]
@@ -218,9 +218,17 @@ mod tests {
 		let source = "foobar";
 
 		let lexer = Lexer::new(source);
-			let mut parser = Parser::new(lexer);
+		let mut parser = Parser::new(lexer);
 
 		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
 		assert_eq!(program.statements.len(), 1);
+		assert!(matches!(
+			program.statements[0],
+			Statement::Expression(ExpressionStatement {
+				expression: Expression::Identifier(Identifier { ref value, .. }),
+				..
+			}) if value == "foobar"
+		));
 	}
 }
