@@ -121,7 +121,7 @@ impl<'a> Lexer<'a> {
 			'|' => { self.read_compound_token('|', TokenType::OR, "||".to_string(), TokenType::PIPE, "|".to_string()) }
 			'&' => { self.read_compound_token('&', TokenType::AND, "&&".to_string(), TokenType::AMP, "&".to_string()) }
 			'<' => { self.read_compound_token('=', TokenType::LTEQ, "<=".to_string(), TokenType::LT, "<".to_string()) }
-			'<' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }			
+			'>' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }			
 			'/' => {
 				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
@@ -283,6 +283,38 @@ mod tests {
 
 		let mut lexer = Lexer::new(source);
 
+		for (_, expected_token) in lexer_cases.iter().enumerate() {
+            let actual_token = lexer.next_token();
+            println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
+            assert_eq!(&actual_token, expected_token);
+		}
+	}
+
+	#[test]
+	fn test_compounds<'a>() {
+		let source = r#"
+            < > = | & ! 
+            <= >= || && != == 
+        "#;
+
+		
+		let mut lexer = Lexer::new(source);
+
+		let lexer_cases = [
+			Token::new(TokenType::LT, "<".to_string()),
+			Token::new(TokenType::GT, ">".to_string()),
+			Token::new(TokenType::ASSIGN, "=".to_string()),
+			Token::new(TokenType::PIPE, "|".to_string()),
+			Token::new(TokenType::AMP, "&".to_string()),
+			Token::new(TokenType::EXCLAMATION, "!".to_string()),
+			Token::new(TokenType::LTEQ, "<=".to_string()),
+			Token::new(TokenType::GTEQ, ">=".to_string()),
+			Token::new(TokenType::OR, "||".to_string()),			
+			Token::new(TokenType::AND, "&&".to_string()),
+			Token::new(TokenType::NOT_EQUALS, "!=".to_string()),			
+			Token::new(TokenType::EQUALS, "==".to_string()),			
+		];
+		
 		for (_, expected_token) in lexer_cases.iter().enumerate() {
             let actual_token = lexer.next_token();
             println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
