@@ -231,4 +231,22 @@ mod tests {
 			}) if value == "foobar"
 		));
 	}
+
+	#[test]
+	fn test_integer_literal() {
+		let source = "1267";
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
+		assert_eq!(program.statements.len(), 1);
+		assert!(matches!(
+			program.statements[0],
+			Statement::Expression(ExpressionStatement {
+				expression: Expression::IntegerLiteral(IntegerLiteral { ref value, .. }),
+				..
+			}) if *value == 1267
+		));
+	}
 }
