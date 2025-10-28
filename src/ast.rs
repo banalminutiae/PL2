@@ -92,8 +92,7 @@ impl LetStatement {
 
 impl fmt::Display for LetStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		// write!(f, "let {} = {}", self.name)
-		write!(f, "let")
+		write!(f, "let {} = {}", self.name, "let")
 	}
 }
 	
@@ -111,7 +110,7 @@ impl ReturnStatement {
 
 impl fmt::Display for ReturnStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "return {}", "return")
+		write!(f, "return {}", "thing")
 	}
 }
 

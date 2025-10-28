@@ -1,6 +1,4 @@
 use crate::token::{Token, TokenType, lookup_identifier};
-use std::iter::{Peekable};
-use std::str::Chars;
 
 #[derive(Clone)]
 pub struct Lexer<'a> {
@@ -53,34 +51,31 @@ impl<'a> Lexer<'a> {
 		}
 	}
 
-	fn read_identifier(&mut self, current_char: char) -> String {
-		let mut ident = String::new();
-		ident.push(current_char);
+	fn read_identifier(&mut self, start_pos: usize) -> String {
 		while let Some(ch) = self.peek_char() {
 			if is_letter(ch) {
-				ident.push(self.read_char().unwrap());
+				self.read_char();
 			} else {
 				break;
 			}
 		}
-		ident
+		self.input[start_pos..self.cursor].to_string()
 	}
 
-	fn read_number(&mut self, current_char: char) -> String {
-		let mut ident = String::new();
-		ident.push(current_char);
+	fn read_number(&mut self, start_pos: usize) -> String {
 		while let Some(ch) = self.peek_char() {
-			if is_digit(ch) {
-				ident.push(self.read_char().unwrap());
+			if is_digit(ch) || ch == '_' || ch == ',' {
+				self.read_char();
 			} else {
 				break;
 			}
 		}
-		ident
+		self.input[start_pos..self.cursor].to_string()
 	}
 
     pub fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
+		let start_pos = self.cursor;
         let current_char =  match self.read_char() {
             Some(token) => token,
             None => ' ',
@@ -169,10 +164,10 @@ impl<'a> Lexer<'a> {
             ' ' => { Token::new(TokenType::EOF, " ".to_string()) }
             _ => {
 				if is_letter(current_char) {
-					let identifier = self.read_identifier(current_char).to_string();
+					let identifier = self.read_identifier(start_pos);
 					Token::new(lookup_identifier(&identifier), identifier)
 				} else if is_digit(current_char) {
-					Token::new(TokenType::INTEGER, self.read_number(current_char).to_string())
+					Token::new(TokenType::INTEGER, self.read_number(start_pos))
 				} else {
 					Token::new(TokenType::ILLEGAL, literal)
 				}
@@ -322,4 +317,25 @@ mod tests {
             assert_eq!(&actual_token, expected_token);
 		}
 	}
+
+	#[test]
+	fn test_number_formats<'a>() {
+		let source = r#"
+            100,000
+            100_000
+        "#;
+
+		let lexer_cases = [
+			Token::new(TokenType::INTEGER, "100,000".to_string()),
+			Token::new(TokenType::INTEGER, "100_000".to_string()),
+		];
+		
+		let mut lexer = Lexer::new(source);
+
+		for (_, expected_token) in lexer_cases.iter().enumerate() {
+            let actual_token = lexer.next_token();
+            println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
+            assert_eq!(&actual_token, expected_token);
+		}
+    }
 }
