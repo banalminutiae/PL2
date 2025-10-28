@@ -133,16 +133,14 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::DIVIDE, literal)
 			}
             ' ' => { Token::new(TokenType::EOF, " ".to_string()) }
-            _ => {
-				if is_letter(current_char) {
-					let identifier = self.read_identifier(start_pos);
-					Token::new(lookup_identifier(&identifier), identifier)
-				} else if is_digit(current_char) {
-					Token::new(TokenType::INTEGER, self.read_number(start_pos))
-				} else {
-					Token::new(TokenType::ILLEGAL, literal)
-				}
+			_ if is_letter(current_char) => {
+				let identifier = self.read_identifier(start_pos);
+				return Token::new(lookup_identifier(&identifier), identifier);
 			}
+			_ if is_digit(current_char) => {
+				Token::new(TokenType::INTEGER, self.read_number(start_pos))
+			}
+            _ => { Token::new(TokenType::ILLEGAL, literal) }
 		}
 	}
 }

@@ -9,7 +9,7 @@ pub trait Node {
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
-    Expression(Expression),
+    Expression(ExpressionStatement),
 }
 
 // Statement ------------------------------------------------------------------------------
@@ -34,6 +34,62 @@ impl fmt::Display for Statement {
 	}
 }
 
+#[derive(Debug)]
+// Whole statement e.g. let x = 5;
+pub struct LetStatement {
+    pub token: Token,
+    pub name: Identifier,
+    // pub value: Expression,
+}
+
+impl LetStatement {
+    pub fn token_literal(&self) -> &str {
+        "let"
+    }
+}
+
+impl fmt::Display for LetStatement {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "let {} = {}", self.name, self.name)
+	}
+}
+	
+#[derive(Debug)]
+pub struct ReturnStatement {
+    pub token: Token,
+    // pub value: Expression,
+}
+
+impl ReturnStatement {
+    pub fn token_literal(&self) -> &str {
+        "return"
+    }
+}
+
+impl fmt::Display for ReturnStatement {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "return {}", "return")
+	}
+}
+
+#[derive(Debug)]
+pub struct ExpressionStatement {
+	pub token: Token,
+	pub expression: Expression
+}
+
+impl ExpressionStatement {
+	pub fn token_literal(&self) -> &str {
+		&self.token.literal
+	}
+}
+
+impl fmt::Display for ExpressionStatement {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.expression.token_literal())
+	}
+}
+
 // Expression -----------------------------------------------------------------------------
 
 #[derive(Debug)]
@@ -42,7 +98,7 @@ pub enum Expression {
     // Ifs and loops can go here because that'd be coo
     // function calls, prefix and postifx operators, and comparisons are also expressions
     Identifier(Identifier),
-    IntegerLiteral(Identifier),
+    IntegerLiteral(IntegerLiteral),
 }
 
 impl Node for Expression {
@@ -77,46 +133,15 @@ impl fmt::Display for Identifier {
 }
 
 #[derive(Debug)]
-// Whole statement e.g. let x = 5;
-pub struct LetStatement {
-    pub token: Token,
-    pub name: Identifier,
-    // pub value: Expression,
-}
-
-impl LetStatement {
-    pub fn token_literal(&self) -> &str {
-        "let"
-    }
-}
-
-impl fmt::Display for LetStatement {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "let {} = {}", self.name, "let")
-	}
-}
-	
-#[derive(Debug)]
-pub struct ReturnStatement {
-    pub token: Token,
-    // pub value: Expression,
-}
-
-impl ReturnStatement {
-    pub fn token_literal(&self) -> &str {
-        "return"
-    }
-}
-
-impl fmt::Display for ReturnStatement {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "return {}", "thing")
-	}
-}
-
-#[derive(Debug)]
 pub struct IntegerLiteral {
+	pub token: Token,
     pub value: i64,
+}
+
+impl fmt::Display for IntegerLiteral {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.value)
+	}
 }
 
 // Program -----------------------------------------------------------------------------
