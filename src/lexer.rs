@@ -111,24 +111,27 @@ impl<'a> Lexer<'a> {
             ':' => { Token::new(TokenType::COLON, literal) }			
             ';' => { Token::new(TokenType::SEMICOLON, literal) }
             ',' => { Token::new(TokenType::COMMA, literal) }
-			'^' => { Token::new(TokenType::CARET, literal) }
 			'~' => { Token::new(TokenType::TILDE, literal) }
-            '+' => { Token::new(TokenType::PLUS, literal) }
-            '-' => { Token::new(TokenType::MINUS, literal) }
-			'*' => { Token::new(TokenType::ASTERISK, literal) }
+			'*' => { self.read_compound_token('=', TokenType::MULTIPLY_ASSIGN, "*=".to_string(), TokenType::ASTERISK, "*".to_string()) }
+			'+' => { self.read_compound_token('=', TokenType::PLUS_ASSIGN, "+=".to_string(), TokenType::PLUS, "+".to_string()) }
+			'-' => { self.read_compound_token('=', TokenType::MINUS_ASSIGN, "-=".to_string(), TokenType::MINUS, "-".to_string()) }			
 			'=' => { self.read_compound_token('=', TokenType::EQUALS, "==".to_string(), TokenType::ASSIGN, "=".to_string()) }
 			'!' => { self.read_compound_token('=', TokenType::NOT_EQUALS, "!=".to_string(), TokenType::EXCLAMATION, "!".to_string()) }
+			'^' => { self.read_compound_token('=', TokenType::XOR, "^=".to_string(), TokenType::CARET, "^".to_string()) }
 			'|' => { self.read_compound_token('|', TokenType::OR, "||".to_string(), TokenType::PIPE, "|".to_string()) }
 			'&' => { self.read_compound_token('&', TokenType::AND, "&&".to_string(), TokenType::AMP, "&".to_string()) }
 			'<' => { self.read_compound_token('=', TokenType::LTEQ, "<=".to_string(), TokenType::LT, "<".to_string()) }
 			'>' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }
-			// TODO: Further compound assignment tokens e.g. -=, %=. *=.
 			'/' => {
 				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
 						self.read_char();
 						self.eat_until_newline();
 						return Token::new(TokenType::COMMENT, "//".to_string());
+					}
+					if peeked_char == '/' {
+						self.read_char();
+						return Token::new(TokenType::DIVIDE_ASSIGN, "/=".to_string());
 					}
 				}
 				Token::new(TokenType::DIVIDE, literal)
