@@ -121,7 +121,8 @@ impl<'a> Lexer<'a> {
 			'|' => { self.read_compound_token('|', TokenType::OR, "||".to_string(), TokenType::PIPE, "|".to_string()) }
 			'&' => { self.read_compound_token('&', TokenType::AND, "&&".to_string(), TokenType::AMP, "&".to_string()) }
 			'<' => { self.read_compound_token('=', TokenType::LTEQ, "<=".to_string(), TokenType::LT, "<".to_string()) }
-			'>' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }			
+			'>' => { self.read_compound_token('=', TokenType::GTEQ, ">=".to_string(), TokenType::GT, ">".to_string()) }
+			// TODO: Further compound assignment tokens e.g. -=, %=. *=.
 			'/' => {
 				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {

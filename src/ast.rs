@@ -99,7 +99,7 @@ pub enum Expression {
     // function calls, prefix and postifx operators, and comparisons are also expressions
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
-	PrefixExpression(Box<PrefixExpression>),
+	Prefix(Box<Prefix>),
 }
 
 impl Node for Expression {
@@ -107,7 +107,7 @@ impl Node for Expression {
         match self {
             Expression::Identifier(ident) => &ident.value,
             Expression::IntegerLiteral(_) => "int",
-			Expression::PrefixExpression(pe) => "who cares",
+			Expression::Prefix(_) => "who cares",
         }
     }
 }
@@ -117,7 +117,7 @@ impl fmt::Display for Expression {
 		match self {
 			Expression::Identifier(ident) => write!(f, "{}", ident),
 			Expression::IntegerLiteral(il) => write!(f, "{}", il),
-			Expression::PrefixExpression(pe) => write!(f, "{}", pe),
+			Expression::Prefix(pe) => write!(f, "{}", pe),
 		}
 	}
 }
@@ -148,13 +148,13 @@ impl fmt::Display for IntegerLiteral {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct PrefixExpression {
+pub struct Prefix {
 	pub token: Token,
 	pub operator: String,
 	pub rhs: Expression,
 }
 
-impl fmt::Display for PrefixExpression {
+impl fmt::Display for Prefix {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}{}", self.operator, self.rhs)
 	}
