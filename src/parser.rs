@@ -11,13 +11,13 @@ pub struct Parser<'a> {
 
 #[repr(u8)]
 enum Precedence {
-	LOWEST = 0,
-	EQUALS = 1,
-	LESSGREATER = 2,
-	SUM = 3,
-	PRODUCT = 4,
-	PREFIX = 5,
-	CALL = 6
+	Lowest = 0,
+	Equals = 1,
+	LessGreater = 2,
+	Sum = 3,
+	Product = 4,
+	Prefix = 5,
+	Call = 6
 }
 
 impl<'a> Parser<'a> {
@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
         let mut program = Program {
             statements: Vec::new(),
         };
-        while self.curr_token.token_type != TokenType::EOF {
+        while self.curr_token.token_type != TokenType::Eof {
             if let Some(statement) = self.parse_statement() {
                 program.statements.push(statement);
             }
@@ -52,8 +52,8 @@ impl<'a> Parser<'a> {
 
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.curr_token.token_type {
-            TokenType::LET => self.parse_let_statement().map(Statement::Let),
-            TokenType::RETURN => self.parse_return_statement().map(Statement::Return),
+            TokenType::Let => self.parse_let_statement().map(Statement::Let),
+            TokenType::Return => self.parse_return_statement().map(Statement::Return),
             _ => self.parse_expression_statement().map(Statement::Expression),
         } 
     }
@@ -61,17 +61,17 @@ impl<'a> Parser<'a> {
     fn parse_let_statement(&mut self) -> Option<LetStatement> {
         let current_token = self.curr_token.clone();
 
-        if !self.peek_and_consume_on_match(TokenType::IDENTIFIER) {
+        if !self.peek_and_consume_on_match(TokenType::Identifier) {
             return None;
         }
 
-        if !self.peek_and_consume_on_match(TokenType::ASSIGN) {
+        if !self.peek_and_consume_on_match(TokenType::Assign) {
             return None;
         }
 
 		self.next_token();
 
-		let value = self.parse_expression(Precedence::LOWEST);
+		let value = self.parse_expression(Precedence::Lowest);
 
 		let statement = LetStatement {
             token: current_token.clone(),
@@ -83,7 +83,7 @@ impl<'a> Parser<'a> {
         };
 
 		
-		if self.peek_token_is(TokenType::SEMICOLON) {
+		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
 
@@ -95,9 +95,9 @@ impl<'a> Parser<'a> {
 
 		self.next_token();
 		
-		let return_value = self.parse_expression(Precedence::LOWEST);
+		let return_value = self.parse_expression(Precedence::Lowest);
 
-		if self.peek_token_is(TokenType::SEMICOLON) {
+		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
 		
@@ -111,11 +111,11 @@ impl<'a> Parser<'a> {
 
 	fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
 		let current_token = self.curr_token.clone();
-		if self.peek_token_is(TokenType::SEMICOLON) {
+		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
 		
-		let exp = self.parse_expression(Precedence::LOWEST)?;
+		let exp = self.parse_expression(Precedence::Lowest)?;
 		
 		let statement = ExpressionStatement { token: current_token, expression: exp };
 		Some(statement)
@@ -123,13 +123,13 @@ impl<'a> Parser<'a> {
 
 	fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
 		match self.curr_token.token_type {
-			TokenType::IDENTIFIER => {
+			TokenType::Identifier => {
 				Some(Expression::Identifier(self.parse_identifier()))
 			}
-			TokenType::INTEGER => {
+			TokenType::Integer => {
 				Some(Expression::IntegerLiteral(self.parse_integer_literal()))
 			}
-			TokenType::MINUS | TokenType::EXCLAMATION | TokenType::TILDE => {
+			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde => {
 				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?))) 
 			}
 			_ => {
@@ -145,7 +145,7 @@ impl<'a> Parser<'a> {
 
 		self.next_token();
 
-		let rhs = self.parse_expression(Precedence::PREFIX)?;
+		let rhs = self.parse_expression(Precedence::Prefix)?;
 
 		let prefix = Prefix { token: current_token, operator, rhs };
 		Some(prefix)

@@ -96,50 +96,50 @@ impl<'a> Lexer<'a> {
         let literal = current_char.into();
 
         match current_char {
-            '{' => { Token::new(TokenType::LBRACE, literal) }
-            '}' => { Token::new(TokenType::RBRACE, literal) }
-            '(' => { Token::new(TokenType::LPAREN, literal) }
-            ')' => { Token::new(TokenType::RPAREN, literal) }
-			'[' => { Token::new(TokenType::LSQ_BRACKET, literal) }
-			']' => { Token::new(TokenType::RSQ_BRACKET, literal) }
-			'%' => { Token::new(TokenType::MOD, literal) }
-            ':' => { Token::new(TokenType::COLON, literal) }			
-            ';' => { Token::new(TokenType::SEMICOLON, literal) }
-            ',' => { Token::new(TokenType::COMMA, literal) }
-			'~' => { Token::new(TokenType::TILDE, literal) }
-			'*' => { self.read_compound_token('=', TokenType::MULTIPLY_ASSIGN, "*=".into(), TokenType::ASTERISK, "*".into()) }
-			'+' => { self.read_compound_token('=', TokenType::PLUS_ASSIGN, "+=".into(), TokenType::PLUS, "+".into()) }
-			'-' => { self.read_compound_token('=', TokenType::MINUS_ASSIGN, "-=".into(), TokenType::MINUS, "-".into()) }			
-			'=' => { self.read_compound_token('=', TokenType::EQUALS, "==".into(), TokenType::ASSIGN, "=".into()) }
-			'!' => { self.read_compound_token('=', TokenType::NOT_EQUALS, "!=".into(), TokenType::EXCLAMATION, "!".into()) }
-			'^' => { self.read_compound_token('=', TokenType::XOR, "^=".into(), TokenType::CARET, "^".into()) }
-			'|' => { self.read_compound_token('|', TokenType::OR, "||".into(), TokenType::PIPE, "|".into()) }
-			'&' => { self.read_compound_token('&', TokenType::AND, "&&".into(), TokenType::AMP, "&".into()) }
-			'<' => { self.read_compound_token('=', TokenType::LTEQ, "<=".into(), TokenType::LT, "<".into()) }
-			'>' => { self.read_compound_token('=', TokenType::GTEQ, ">=".into(), TokenType::GT, ">".into()) }
+            '{' => { Token::new(TokenType::Lbrace, literal) }
+            '}' => { Token::new(TokenType::Rbrace, literal) }
+            '(' => { Token::new(TokenType::Lparen, literal) }
+            ')' => { Token::new(TokenType::Rparen, literal) }
+			'[' => { Token::new(TokenType::Lsq_Bracket, literal) }
+			']' => { Token::new(TokenType::Rsq_Bracket, literal) }
+			'%' => { Token::new(TokenType::Mod, literal) }
+            ':' => { Token::new(TokenType::Colon, literal) }			
+            ';' => { Token::new(TokenType::Semicolon, literal) }
+            ',' => { Token::new(TokenType::Comma, literal) }
+			'~' => { Token::new(TokenType::Tilde, literal) }
+			'*' => { self.read_compound_token('=', TokenType::Multiply_Assign, "*=".into(), TokenType::Asterisk, "*".into()) }
+			'+' => { self.read_compound_token('=', TokenType::Plus_Assign, "+=".into(), TokenType::Plus, "+".into()) }
+			'-' => { self.read_compound_token('=', TokenType::Minus_Assign, "-=".into(), TokenType::Minus, "-".into()) }			
+			'=' => { self.read_compound_token('=', TokenType::Equals, "==".into(), TokenType::Assign, "=".into()) }
+			'!' => { self.read_compound_token('=', TokenType::Not_Equals, "!=".into(), TokenType::Exclamation, "!".into()) }
+			'^' => { self.read_compound_token('=', TokenType::Xor, "^=".into(), TokenType::Caret, "^".into()) }
+			'|' => { self.read_compound_token('|', TokenType::Or, "||".into(), TokenType::Pipe, "|".into()) }
+			'&' => { self.read_compound_token('&', TokenType::And, "&&".into(), TokenType::Amp, "&".into()) }
+			'<' => { self.read_compound_token('=', TokenType::Lteq, "<=".into(), TokenType::Lt, "<".into()) }
+			'>' => { self.read_compound_token('=', TokenType::Gteq, ">=".into(), TokenType::Gt, ">".into()) }
 			'/' => {
 				if let Some(peeked_char) = self.peek_char() {
 					if peeked_char == '/' {
 						self.read_char();
 						self.eat_until_newline();
-						return Token::new(TokenType::COMMENT, "//".into());
+						return Token::new(TokenType::Comment, "//".into());
 					}
 					if peeked_char == '/' {
 						self.read_char();
-						return Token::new(TokenType::DIVIDE_ASSIGN, "/=".into());
+						return Token::new(TokenType::Divide_Assign, "/=".into());
 					}
 				}
-				Token::new(TokenType::DIVIDE, literal)
+				Token::new(TokenType::Divide, literal)
 			}
-            ' ' => { Token::new(TokenType::EOF, " ".into()) }
+            ' ' => { Token::new(TokenType::Eof, " ".into()) }
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
 				Token::new(lookup_identifier(&identifier), identifier)
 			}
 			_ if current_char.is_ascii_digit() => {
-				Token::new(TokenType::INTEGER, self.read_number(start_pos))
+				Token::new(TokenType::Integer, self.read_number(start_pos))
 			}
-            _ => { Token::new(TokenType::ILLEGAL, literal) }
+            _ => { Token::new(TokenType::Illegal, literal) }
 		}
 	}
 }
@@ -161,46 +161,46 @@ mod tests {
             let result = add(x, y);
         "#;
         let lexer_cases = [
-            Token::new(TokenType::LET, "let".into()),
-            Token::new(TokenType::IDENTIFIER, "x".into()),
-            Token::new(TokenType::ASSIGN, "=".into()),
-            Token::new(TokenType::INTEGER, "15".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
+            Token::new(TokenType::Let, "let".into()),
+            Token::new(TokenType::Identifier, "x".into()),
+            Token::new(TokenType::Assign, "=".into()),
+            Token::new(TokenType::Integer, "15".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
 			
-			Token::new(TokenType::LET, "let".into()),
-            Token::new(TokenType::IDENTIFIER, "y".into()),
-            Token::new(TokenType::ASSIGN, "=".into()),
-            Token::new(TokenType::INTEGER, "10".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
+			Token::new(TokenType::Let, "let".into()),
+            Token::new(TokenType::Identifier, "y".into()),
+            Token::new(TokenType::Assign, "=".into()),
+            Token::new(TokenType::Integer, "10".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
 			
-			Token::new(TokenType::LET, "let".into()),
-			Token::new(TokenType::IDENTIFIER, "add".into()),
-			Token::new(TokenType::ASSIGN, "=".into()),
-			Token::new(TokenType::FUNCTION, "fn".into()),
-			Token::new(TokenType::LPAREN, "(".into()),
-            Token::new(TokenType::IDENTIFIER, "x".into()),
-			Token::new(TokenType::COMMA, ",".into()),
-			Token::new(TokenType::IDENTIFIER, "y".into()),
-			Token::new(TokenType::RPAREN, ")".into()),
-            Token::new(TokenType::LBRACE, "{".into()),
-			Token::new(TokenType::IDENTIFIER, "x".into()),
-			Token::new(TokenType::PLUS, "+".into()),
-			Token::new(TokenType::IDENTIFIER, "y".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
-            Token::new(TokenType::RBRACE, "}".into()),
-            Token::new(TokenType::SEMICOLON, ";".into()),
+			Token::new(TokenType::Let, "let".into()),
+			Token::new(TokenType::Identifier, "add".into()),
+			Token::new(TokenType::Assign, "=".into()),
+			Token::new(TokenType::Function, "fn".into()),
+			Token::new(TokenType::Lparen, "(".into()),
+            Token::new(TokenType::Identifier, "x".into()),
+			Token::new(TokenType::Comma, ",".into()),
+			Token::new(TokenType::Identifier, "y".into()),
+			Token::new(TokenType::Rparen, ")".into()),
+            Token::new(TokenType::Lbrace, "{".into()),
+			Token::new(TokenType::Identifier, "x".into()),
+			Token::new(TokenType::Plus, "+".into()),
+			Token::new(TokenType::Identifier, "y".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
+            Token::new(TokenType::Rbrace, "}".into()),
+            Token::new(TokenType::Semicolon, ";".into()),
 
-			Token::new(TokenType::LET, "let".into()),
-			Token::new(TokenType::IDENTIFIER, "result".into()),
-			Token::new(TokenType::ASSIGN, "=".into()),
-			Token::new(TokenType::IDENTIFIER, "add".into()),
-			Token::new(TokenType::LPAREN, "(".into()),
-            Token::new(TokenType::IDENTIFIER, "x".into()),
-			Token::new(TokenType::COMMA, ",".into()),
-			Token::new(TokenType::IDENTIFIER, "y".into()),
-			Token::new(TokenType::RPAREN, ")".into()),
-            Token::new(TokenType::SEMICOLON, ";".into()),
-			Token::new(TokenType::EOF, " ".into()),
+			Token::new(TokenType::Let, "let".into()),
+			Token::new(TokenType::Identifier, "result".into()),
+			Token::new(TokenType::Assign, "=".into()),
+			Token::new(TokenType::Identifier, "add".into()),
+			Token::new(TokenType::Lparen, "(".into()),
+            Token::new(TokenType::Identifier, "x".into()),
+			Token::new(TokenType::Comma, ",".into()),
+			Token::new(TokenType::Identifier, "y".into()),
+			Token::new(TokenType::Rparen, ")".into()),
+            Token::new(TokenType::Semicolon, ";".into()),
+			Token::new(TokenType::Eof, " ".into()),
         ];
 
         let mut lexer = Lexer::new(source);
@@ -223,25 +223,25 @@ mod tests {
         "#;
 
 		let lexer_cases = [
-			Token::new(TokenType::IF, "if".into()),
-			Token::new(TokenType::LPAREN, "(".into()),
-			Token::new(TokenType::INTEGER, "5".into()),
-			Token::new(TokenType::LTEQ, "<=".into()),
-			Token::new(TokenType::INTEGER, "10".into()),
-			Token::new(TokenType::RPAREN, ")".into()),
-			Token::new(TokenType::LBRACE, "{".into()),
-			Token::new(TokenType::RETURN, "return".into()),
-			Token::new(TokenType::TRUE, "true".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
-			Token::new(TokenType::RBRACE, "}".into()),
-			Token::new(TokenType::ELSE, "else".into()),
-			Token::new(TokenType::LBRACE, "{".into()),
-			Token::new(TokenType::RETURN, "return".into()),
-			Token::new(TokenType::EXCLAMATION, "!".into()),
-			Token::new(TokenType::FALSE, "false".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
-			Token::new(TokenType::RBRACE, "}".into()),
-			Token::new(TokenType::EOF, " ".into()),
+			Token::new(TokenType::If, "if".into()),
+			Token::new(TokenType::Lparen, "(".into()),
+			Token::new(TokenType::Integer, "5".into()),
+			Token::new(TokenType::Lteq, "<=".into()),
+			Token::new(TokenType::Integer, "10".into()),
+			Token::new(TokenType::Rparen, ")".into()),
+			Token::new(TokenType::Lbrace, "{".into()),
+			Token::new(TokenType::Return, "return".into()),
+			Token::new(TokenType::True, "true".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
+			Token::new(TokenType::Rbrace, "}".into()),
+			Token::new(TokenType::Else, "else".into()),
+			Token::new(TokenType::Lbrace, "{".into()),
+			Token::new(TokenType::Return, "return".into()),
+			Token::new(TokenType::Exclamation, "!".into()),
+			Token::new(TokenType::False, "false".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
+			Token::new(TokenType::Rbrace, "}".into()),
+			Token::new(TokenType::Eof, " ".into()),
 		];
 		
 
@@ -262,12 +262,12 @@ mod tests {
         "#;
 
 		let lexer_cases = [
-			Token::new(TokenType::COMMENT, "//".into()),
-            Token::new(TokenType::LET, "let".into()),
-            Token::new(TokenType::IDENTIFIER, "x".into()),
-            Token::new(TokenType::ASSIGN, "=".into()),
-            Token::new(TokenType::INTEGER, "0".into()),
-			Token::new(TokenType::SEMICOLON, ";".into()),
+			Token::new(TokenType::Comment, "//".into()),
+            Token::new(TokenType::Let, "let".into()),
+            Token::new(TokenType::Identifier, "x".into()),
+            Token::new(TokenType::Assign, "=".into()),
+            Token::new(TokenType::Integer, "0".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
 		];
 
 		let mut lexer = Lexer::new(source);
@@ -290,18 +290,18 @@ mod tests {
 		let mut lexer = Lexer::new(source);
 
 		let lexer_cases = [
-			Token::new(TokenType::LT, "<".into()),
-			Token::new(TokenType::GT, ">".into()),
-			Token::new(TokenType::ASSIGN, "=".into()),
-			Token::new(TokenType::PIPE, "|".into()),
-			Token::new(TokenType::AMP, "&".into()),
-			Token::new(TokenType::EXCLAMATION, "!".into()),
-			Token::new(TokenType::LTEQ, "<=".into()),
-			Token::new(TokenType::GTEQ, ">=".into()),
-			Token::new(TokenType::OR, "||".into()),			
-			Token::new(TokenType::AND, "&&".into()),
-			Token::new(TokenType::NOT_EQUALS, "!=".into()),			
-			Token::new(TokenType::EQUALS, "==".into()),			
+			Token::new(TokenType::Lt, "<".into()),
+			Token::new(TokenType::Gt, ">".into()),
+			Token::new(TokenType::Assign, "=".into()),
+			Token::new(TokenType::Pipe, "|".into()),
+			Token::new(TokenType::Amp, "&".into()),
+			Token::new(TokenType::Exclamation, "!".into()),
+			Token::new(TokenType::Lteq, "<=".into()),
+			Token::new(TokenType::Gteq, ">=".into()),
+			Token::new(TokenType::Or, "||".into()),			
+			Token::new(TokenType::And, "&&".into()),
+			Token::new(TokenType::Not_Equals, "!=".into()),			
+			Token::new(TokenType::Equals, "==".into()),			
 		];
 		
 		for (_, expected_token) in lexer_cases.iter().enumerate() {
@@ -319,8 +319,8 @@ mod tests {
         "#;
 
 		let lexer_cases = [
-			Token::new(TokenType::INTEGER, "100,000".into()),
-			Token::new(TokenType::INTEGER, "100_000".into()),
+			Token::new(TokenType::Integer, "100,000".into()),
+			Token::new(TokenType::Integer, "100_000".into()),
 		];
 		
 		let mut lexer = Lexer::new(source);
