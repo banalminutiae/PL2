@@ -53,7 +53,7 @@ impl<'a> Lexer<'a> {
 
 	fn read_identifier(&mut self, start_pos: usize) -> String {
 		while let Some(ch) = self.peek_char() {
-			if is_letter(ch) {
+			if ch.is_alphabetic() {
 				self.read_char();
 			} else {
 				break;
@@ -64,7 +64,7 @@ impl<'a> Lexer<'a> {
 
 	fn read_number(&mut self, start_pos: usize) -> String {
 		while let Some(ch) = self.peek_char() {
-			if is_digit(ch) || ch == '_' || ch == ',' {
+			if ch.is_ascii_digit() || ch == '_' || ch == ',' {
 				self.read_char();
 			} else {
 				break;
@@ -81,11 +81,9 @@ impl<'a> Lexer<'a> {
 		single_type: TokenType,
 		single_literal: String,
 	) -> Token {
-		if let Some(peeked_char) = self.peek_char() {
-			if peeked_char == expected {
-				self.read_char();
-				return Token::new(compound_type, compound_literal);
-			}
+		if let Some(peeked_char) = self.peek_char() && peeked_char == expected {
+			self.read_char();
+			return Token::new(compound_type, compound_literal);
 		}
 		Token::new(single_type, single_literal)
 	}
@@ -93,10 +91,7 @@ impl<'a> Lexer<'a> {
     pub fn next_token(&mut self) -> Token {
 		self.eat_whitespace();
 		let start_pos = self.cursor;
-        let current_char =  match self.read_char() {
-            Some(token) => token,
-            None => ' ',
-        };
+        let current_char = self.read_char().unwrap_or(' ');
 
         let literal = current_char.into();
 
@@ -137,24 +132,16 @@ impl<'a> Lexer<'a> {
 				Token::new(TokenType::DIVIDE, literal)
 			}
             ' ' => { Token::new(TokenType::EOF, " ".into()) }
-			_ if is_letter(current_char) => {
+			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
-				return Token::new(lookup_identifier(&identifier), identifier);
+				Token::new(lookup_identifier(&identifier), identifier)
 			}
-			_ if is_digit(current_char) => {
+			_ if current_char.is_ascii_digit() => {
 				Token::new(TokenType::INTEGER, self.read_number(start_pos))
 			}
             _ => { Token::new(TokenType::ILLEGAL, literal) }
 		}
 	}
-}
-
-fn is_letter(ch: char) -> bool {
-    return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_';
-}
-
-fn is_digit(ch: char) -> bool {
-	return '0' <= ch && ch <= '9';
 }
 
 #[cfg(test)]

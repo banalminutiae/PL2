@@ -6,7 +6,7 @@ use crate::lexer::Lexer;
 pub fn start() {
 	println!(">> PL2, v0.0.1");
 	print!(">>");
-	io::stdout().flush().unwrap();
+	let _ = io::stdout().flush();
 
 	let mut src = String::new();
     let _ = io::stdin().read_line(&mut src);

@@ -67,7 +67,7 @@ pub enum TokenType {
     EOF,
 }
 
-static KEYWORDS: &'static [(&'static str, TokenType)] = &[
+static KEYWORDS: &[(&str, TokenType)] = &[
 	("fn", TokenType::FUNCTION),
 	("let", TokenType::LET),
 	("true", TokenType::TRUE),

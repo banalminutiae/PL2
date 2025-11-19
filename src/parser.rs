@@ -115,9 +115,7 @@ impl<'a> Parser<'a> {
 			self.next_token();
 		}
 		
-		let Some(exp) = self.parse_expression(Precedence::LOWEST) else {
-			return None;
-		};
+		let exp = self.parse_expression(Precedence::LOWEST)?;
 		
 		let statement = ExpressionStatement { token: current_token, expression: exp };
 		Some(statement)
@@ -132,7 +130,7 @@ impl<'a> Parser<'a> {
 				Some(Expression::IntegerLiteral(self.parse_integer_literal()))
 			}
 			TokenType::MINUS | TokenType::EXCLAMATION | TokenType::TILDE => {
-				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?.into()))) // WTF??
+				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?))) 
 			}
 			_ => {
 				self.no_prefix_parser_error(self.curr_token.token_type.clone());
@@ -147,9 +145,7 @@ impl<'a> Parser<'a> {
 
 		self.next_token();
 
-		let Some(rhs) = self.parse_expression(Precedence::PREFIX) else {
-			return None;
-		};
+		let rhs = self.parse_expression(Precedence::PREFIX)?;
 
 		let prefix = Prefix { token: current_token, operator, rhs };
 		Some(prefix)
@@ -179,11 +175,7 @@ impl<'a> Parser<'a> {
     }
 
 	fn peek_token_is(&mut self, expected_type: TokenType) -> bool {
-		if self.next_token.token_type == expected_type {
-			true
-		} else {
-			false
-		}
+		self.next_token.token_type == expected_type 
 	}
 	
     fn peek_and_consume_on_match(&mut self, expected_type: TokenType) -> bool {
