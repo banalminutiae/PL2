@@ -65,7 +65,7 @@ impl<'a> Parser<'a> {
             return None;
         }
 
-        if !self.peek_and_consume_on_match(TokenType::Assign) {
+        if !self.peek_and_consume_on_match(TokenType::Equals) {
             return None;
         }
 

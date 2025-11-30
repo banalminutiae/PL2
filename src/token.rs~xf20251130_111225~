@@ -20,12 +20,11 @@ pub enum TokenType {
     Equals_Equals,
 	Not_Equals,
     Plus,
-	Plus_Equals,
+	Plus_Assign,
     Minus,
-	Minus_Equals,
 	Exclamation,
 	Asterisk,
-	Multiply_Equals,
+	Multiply_Assign,
 
 	Lt,
 	Lteq,
@@ -34,7 +33,7 @@ pub enum TokenType {
 
 	Divide,
 	Comment,
-	Divide_Equals,
+	Divide_Assign,
 	
 	Pipe,
 	Or,

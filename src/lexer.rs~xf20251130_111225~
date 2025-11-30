@@ -107,9 +107,9 @@ impl<'a> Lexer<'a> {
             ';' => { Token::new(TokenType::Semicolon, literal) }
             ',' => { Token::new(TokenType::Comma, literal) }
 			'~' => { Token::new(TokenType::Tilde, literal) }
-			'*' => { self.read_compound_token('=', TokenType::Multiply_Equals, "*=".into(), TokenType::Asterisk, "*".into()) }
-			'+' => { self.read_compound_token('=', TokenType::Plus_Equals, "+=".into(), TokenType::Plus, "+".into()) }
-			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }			
+			'*' => { self.read_compound_token('=', TokenType::Multiply_Assign, "*=".into(), TokenType::Asterisk, "*".into()) }
+			'+' => { self.read_compound_token('=', TokenType::Plus_Assign, "+=".into(), TokenType::Plus, "+".into()) }
+			'-' => { self.read_compound_token('=', TokenType::Minus_Assign, "-=".into(), TokenType::Minus, "-".into()) }			
 			'=' => { self.read_compound_token('=', TokenType::Equals_Equals, "==".into(), TokenType::Equals, "=".into()) }
 			'!' => { self.read_compound_token('=', TokenType::Not_Equals, "!=".into(), TokenType::Exclamation, "!".into()) }
 			'^' => { self.read_compound_token('=', TokenType::Caret_Equals, "^=".into(), TokenType::Caret, "^".into()) }
@@ -126,7 +126,7 @@ impl<'a> Lexer<'a> {
 					}
 					if peeked_char == '/' {
 						self.read_char();
-						return Token::new(TokenType::Divide_Equals, "/=".into());
+						return Token::new(TokenType::Divide_Assign, "/=".into());
 					}
 				}
 				Token::new(TokenType::Divide, literal)
