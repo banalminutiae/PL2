@@ -102,11 +102,11 @@ impl<'a> Lexer<'a> {
             ')' => { Token::new(TokenType::Rparen, literal) }
 			'[' => { Token::new(TokenType::Lsq_Bracket, literal) }
 			']' => { Token::new(TokenType::Rsq_Bracket, literal) }
+			'%' => { Token::new(TokenType::Mod, literal) }
             ':' => { Token::new(TokenType::Colon, literal) }			
             ';' => { Token::new(TokenType::Semicolon, literal) }
             ',' => { Token::new(TokenType::Comma, literal) }
 			'~' => { Token::new(TokenType::Tilde, literal) }
-			'%' => { self.read_compound_token('=', TokenType::Percent_Equals, "%=".into(), TokenType::Percent, "%".into()) }
 			'*' => { self.read_compound_token('=', TokenType::Multiply_Equals, "*=".into(), TokenType::Asterisk, "*".into()) }
 			'+' => { self.read_compound_token('=', TokenType::Plus_Equals, "+=".into(), TokenType::Plus, "+".into()) }
 			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }			
@@ -163,19 +163,19 @@ mod tests {
         let lexer_cases = [
             Token::new(TokenType::Let, "let".into()),
             Token::new(TokenType::Identifier, "x".into()),
-            Token::new(TokenType::Equals, "=".into()),
+            Token::new(TokenType::Assign, "=".into()),
             Token::new(TokenType::Integer, "15".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 			
 			Token::new(TokenType::Let, "let".into()),
             Token::new(TokenType::Identifier, "y".into()),
-            Token::new(TokenType::Equals, "=".into()),
+            Token::new(TokenType::Assign, "=".into()),
             Token::new(TokenType::Integer, "10".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 			
 			Token::new(TokenType::Let, "let".into()),
 			Token::new(TokenType::Identifier, "add".into()),
-			Token::new(TokenType::Equals, "=".into()),
+			Token::new(TokenType::Assign, "=".into()),
 			Token::new(TokenType::Function, "fn".into()),
 			Token::new(TokenType::Lparen, "(".into()),
             Token::new(TokenType::Identifier, "x".into()),
@@ -192,7 +192,7 @@ mod tests {
 
 			Token::new(TokenType::Let, "let".into()),
 			Token::new(TokenType::Identifier, "result".into()),
-			Token::new(TokenType::Equals, "=".into()),
+			Token::new(TokenType::Assign, "=".into()),
 			Token::new(TokenType::Identifier, "add".into()),
 			Token::new(TokenType::Lparen, "(".into()),
             Token::new(TokenType::Identifier, "x".into()),
@@ -265,7 +265,7 @@ mod tests {
 			Token::new(TokenType::Comment, "//".into()),
             Token::new(TokenType::Let, "let".into()),
             Token::new(TokenType::Identifier, "x".into()),
-            Token::new(TokenType::Equals, "=".into()),
+            Token::new(TokenType::Assign, "=".into()),
             Token::new(TokenType::Integer, "0".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 		];
@@ -292,7 +292,7 @@ mod tests {
 		let lexer_cases = [
 			Token::new(TokenType::Lt, "<".into()),
 			Token::new(TokenType::Gt, ">".into()),
-			Token::new(TokenType::Equals, "=".into()),
+			Token::new(TokenType::Assign, "=".into()),
 			Token::new(TokenType::Pipe, "|".into()),
 			Token::new(TokenType::Amp, "&".into()),
 			Token::new(TokenType::Exclamation, "!".into()),
@@ -301,7 +301,7 @@ mod tests {
 			Token::new(TokenType::Or, "||".into()),			
 			Token::new(TokenType::And, "&&".into()),
 			Token::new(TokenType::Not_Equals, "!=".into()),			
-			Token::new(TokenType::Equals_Equals, "==".into()),			
+			Token::new(TokenType::Equals, "==".into()),			
 		];
 		
 		for (_, expected_token) in lexer_cases.iter().enumerate() {
