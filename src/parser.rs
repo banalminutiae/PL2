@@ -163,6 +163,12 @@ impl<'a> Parser<'a> {
 		IntegerLiteral { token: self.curr_token.clone(), value }
 	}
 
+	fn synchronize_statement(&mut self) {
+		while self.curr_token.token_type != TokenType::Semicolon && self.curr_token.token_type != TokenType::EOF {
+			self.next_token()
+		}
+	}
+
 	fn no_prefix_parser_error(&mut self, token_type: TokenType) {
 		let message = format!("No prefix parse function for {:?} found", token_type);
 		self.errors.push(message);
@@ -190,12 +196,6 @@ impl<'a> Parser<'a> {
             false
         }
     }
-
-	fn synchronize_statement(&mut self) {
-		while self.curr_token.token_type != TokenType::Semicolon && self.curr_token.token_type != TokenType::EOF {
-			self.next_token()
-		}
-	}
 }
 
 #[cfg(test)]
@@ -215,9 +215,24 @@ mod tests {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program();
+
         assert_eq!(parser.errors.len(), 0);
         assert_eq!(program.statements.len(), 3);
-        println!("{:#?}", program.statements);
+
+		if let Statement::Let(let_statement) = &program.statements[0] {
+			assert_eq!(let_statement.name.value, "x");
+
+			if let Expression::IntegerLiteral(int_lit) = &let_statement.value {
+				assert_eq!(int_lit.value, 5);
+			} else {
+				panic!("expected IntegerLiteral");
+			}
+		} else {
+			panic!("expected let statement");
+		}
+
+		println!("Statements: {:#?}", program.statements);
+		println!("Errors: {:#?}", parser.errors);
     }
 
     #[test]
@@ -229,9 +244,12 @@ mod tests {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program();
-        println!("{:#?}", program.statements);
+		println!("Statement: {:#?}", program.statements);
+		println!("Errors: {:#?}", parser.errors);		
         assert_eq!(parser.errors.len(), 0);
         assert_eq!(program.statements.len(), 1);
+
+
     }
 
     #[test]

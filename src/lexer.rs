@@ -17,8 +17,8 @@ impl<'a> Lexer<'a> {
     fn read_char(&mut self) -> Option<char> {
 		let remaining_input = &self.input[self.cursor..];
 
-        let mut chars = remaining_input.chars();
-
+		let mut chars = remaining_input.chars(); 
+		
 		if let Some(c) = chars.next() {
             self.cursor += c.len_utf8();
             Some(c)
@@ -31,12 +31,18 @@ impl<'a> Lexer<'a> {
         self.input[self.cursor..].chars().next()
     }
 
-    fn eat_whitespace(&mut self) {
+    fn eat_whitespace_and_comments(&mut self) {
 		while let Some(ch) = self.peek_char() {
-			if ch.is_whitespace() {
-				self.read_char().unwrap();
-			} else {
-				break;
+			match Some(ch) {
+				Some(ch) if (ch.is_whitespace()) => {
+					self.read_char();
+				}
+				Some('/') => {
+					self.read_char();
+					self.read_char();
+					self.eat_until_newline();
+				}
+				_ => break,
 			}
 		}
 	}
@@ -89,7 +95,7 @@ impl<'a> Lexer<'a> {
 	}
 
     pub fn next_token(&mut self) -> Token {
-		self.eat_whitespace();
+		self.eat_whitespace_and_comments();
 		let start_pos = self.cursor;
         let current_char = self.read_char().unwrap_or(' ');
 
@@ -109,7 +115,8 @@ impl<'a> Lexer<'a> {
 			'%' => { self.read_compound_token('=', TokenType::Percent_Equals, "%=".into(), TokenType::Percent, "%".into()) }
 			'*' => { self.read_compound_token('=', TokenType::Multiply_Equals, "*=".into(), TokenType::Asterisk, "*".into()) }
 			'+' => { self.read_compound_token('=', TokenType::Plus_Equals, "+=".into(), TokenType::Plus, "+".into()) }
-			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }			
+			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }
+			'/' => { self.read_compound_token('=', TokenType::Divide_Equals, "/=".into(), TokenType::Divide, "/".into()) }
 			'=' => { self.read_compound_token('=', TokenType::Equals_Equals, "==".into(), TokenType::Equals, "=".into()) }
 			'!' => { self.read_compound_token('=', TokenType::Not_Equals, "!=".into(), TokenType::Exclamation, "!".into()) }
 			'^' => { self.read_compound_token('=', TokenType::Caret_Equals, "^=".into(), TokenType::Caret, "^".into()) }
@@ -117,20 +124,6 @@ impl<'a> Lexer<'a> {
 			'&' => { self.read_compound_token('&', TokenType::And, "&&".into(), TokenType::Amp, "&".into()) }
 			'<' => { self.read_compound_token('=', TokenType::Lteq, "<=".into(), TokenType::Lt, "<".into()) }
 			'>' => { self.read_compound_token('=', TokenType::Gteq, ">=".into(), TokenType::Gt, ">".into()) }
-			'/' => {
-				if let Some(peeked_char) = self.peek_char() {
-					if peeked_char == '/' {
-						self.read_char();
-						self.eat_until_newline();
-						return Token::new(TokenType::Comment, "//".into());
-					}
-					if peeked_char == '/' {
-						self.read_char();
-						return Token::new(TokenType::Divide_Equals, "/=".into());
-					}
-				}
-				Token::new(TokenType::Divide, literal)
-			}
             ' ' => { Token::new(TokenType::EOF, " ".into()) }
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
@@ -262,7 +255,6 @@ mod tests {
         "#;
 
 		let lexer_cases = [
-			Token::new(TokenType::Comment, "//".into()),
             Token::new(TokenType::Let, "let".into()),
             Token::new(TokenType::Identifier, "x".into()),
             Token::new(TokenType::Equals, "=".into()),

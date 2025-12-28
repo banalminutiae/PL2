@@ -33,7 +33,6 @@ pub enum TokenType {
 	Gteq,
 
 	Divide,
-	Comment,
 	Divide_Equals,
 	
 	Pipe,
