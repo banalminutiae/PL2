@@ -41,9 +41,10 @@ impl<'a> Parser<'a> {
         let mut program = Program {
             statements: Vec::new(),
         };
-        while self.curr_token.token_type != TokenType::Eof {
-            if let Some(statement) = self.parse_statement() {
-                program.statements.push(statement);
+        while self.curr_token.token_type != TokenType::EOF {
+            match self.parse_statement() {
+                Some(statement) => program.statements.push(statement),
+				None => self.synchronize_statement(),
             }
             self.next_token();
         }
@@ -148,7 +149,7 @@ impl<'a> Parser<'a> {
 		self.next_token();
 
 		let rhs = self.parse_expression(Precedence::Prefix)?;
-
+		
 		let prefix = Prefix { token: current_token, operator, rhs };
 		Some(prefix)
 	}
@@ -189,6 +190,12 @@ impl<'a> Parser<'a> {
             false
         }
     }
+
+	fn synchronize_statement(&mut self) {
+		while self.curr_token.token_type != TokenType::Semicolon && self.curr_token.token_type != TokenType::EOF {
+			self.next_token()
+		}
+	}
 }
 
 #[cfg(test)]
@@ -238,8 +245,8 @@ mod tests {
         let mut parser = Parser::new(lexer);
 
         let _ = parser.parse_program();
-		println!("here damn {:#?}", parser.errors);
-        assert_eq!(parser.errors.len(), 4);
+		println!("Reported errors: {:#?}", parser.errors);
+        assert_eq!(parser.errors.len(), 2);
     }
 
 	#[test]

@@ -131,7 +131,7 @@ impl<'a> Lexer<'a> {
 				}
 				Token::new(TokenType::Divide, literal)
 			}
-            ' ' => { Token::new(TokenType::Eof, " ".into()) }
+            ' ' => { Token::new(TokenType::EOF, " ".into()) }
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
 				Token::new(lookup_identifier(&identifier), identifier)
@@ -200,7 +200,7 @@ mod tests {
 			Token::new(TokenType::Identifier, "y".into()),
 			Token::new(TokenType::Rparen, ")".into()),
             Token::new(TokenType::Semicolon, ";".into()),
-			Token::new(TokenType::Eof, " ".into()),
+			Token::new(TokenType::EOF, " ".into()),
         ];
 
         let mut lexer = Lexer::new(source);
@@ -241,7 +241,7 @@ mod tests {
 			Token::new(TokenType::False, "false".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 			Token::new(TokenType::Rbrace, "}".into()),
-			Token::new(TokenType::Eof, " ".into()),
+			Token::new(TokenType::EOF, " ".into()),
 		];
 		
 

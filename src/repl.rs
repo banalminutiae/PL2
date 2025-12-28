@@ -15,7 +15,7 @@ pub fn start() {
 	loop {
 		let token = lexer.next_token();
 		println!("{:?}", token);
-		if token == Token::new(TokenType::Eof, " ".to_string()) {
+		if token == Token::new(TokenType::EOF, " ".to_string()) {
 			break;
 		}
 	}
