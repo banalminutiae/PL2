@@ -65,6 +65,8 @@ impl<'a> Parser<'a> {
             return None;
         }
 
+		let ident_token = self.curr_token.clone();
+
         if !self.peek_and_consume_on_match(TokenType::Equals) {
             return None;
         }
@@ -76,8 +78,8 @@ impl<'a> Parser<'a> {
 		let statement = LetStatement {
             token: current_token.clone(),
             name: Identifier {
-                token: self.curr_token.clone(),
-                value: self.curr_token.literal.clone(),
+                token: ident_token.clone(),
+                value: ident_token.literal.clone(),
             },
 			value: value?,
         };
@@ -225,21 +227,20 @@ mod tests {
         assert_eq!(program.statements.len(), 1);
     }
 
-    // #[test]
-    // fn test_parser_errors() {
-    //     let source = r#"
-    //         let = 5;
-    //         let 828282;
-    //     "#;
+    #[test]
+    fn test_parser_errors() {
+        let source = r#"
+            let = 5;
+            let 828282;
+        "#;
 
-    //     let lexer = Lexer::new(source);
-    //     let mut parser = Parser::new(lexer);
+        let lexer = Lexer::new(source);
+        let mut parser = Parser::new(lexer);
 
-    //     let _ = parser.parse_program();
-	// 	println!("here damn {:#?}", parser.errors);
-
-    //     assert_eq!(parser.errors.len(), 3);
-    // }
+        let _ = parser.parse_program();
+		println!("here damn {:#?}", parser.errors);
+        assert_eq!(parser.errors.len(), 4);
+    }
 
 	#[test]
 	fn test_expression() {
