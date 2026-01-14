@@ -184,8 +184,16 @@ impl<'a> Parser<'a> {
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
 			_ => Precedence::Lowest, 
 		};
-		
-		return Precedence::Lowest;
+	}
+
+	fn peek_precedence(&self) -> Precedence {
+		match self.next_token.token_type {
+			TokenType::Equals | TokenType::Not_Equals => Precedence::Equals,
+			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
+			TokenType::Plus | TokenType::Minus => Precedence::Sum,
+			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
+			_ => Precedence::Lowest, 
+		};
 	}
 
 	fn synchronize_statement(&mut self) {
