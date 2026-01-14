@@ -32,8 +32,8 @@ pub enum TokenType {
 	Gt,
 	Gteq,
 
-	Divide,
-	Divide_Equals,
+	Slash,
+	Slash_Equals,
 	
 	Pipe,
 	Or,

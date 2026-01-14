@@ -116,7 +116,7 @@ impl<'a> Lexer<'a> {
 			'*' => { self.read_compound_token('=', TokenType::Multiply_Equals, "*=".into(), TokenType::Asterisk, "*".into()) }
 			'+' => { self.read_compound_token('=', TokenType::Plus_Equals, "+=".into(), TokenType::Plus, "+".into()) }
 			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }
-			'/' => { self.read_compound_token('=', TokenType::Divide_Equals, "/=".into(), TokenType::Divide, "/".into()) }
+			'/' => { self.read_compound_token('=', TokenType::Slash_Equals, "/=".into(), TokenType::Slash, "/".into()) }
 			'=' => { self.read_compound_token('=', TokenType::Equals_Equals, "==".into(), TokenType::Equals, "=".into()) }
 			'!' => { self.read_compound_token('=', TokenType::Not_Equals, "!=".into(), TokenType::Exclamation, "!".into()) }
 			'^' => { self.read_compound_token('=', TokenType::Caret_Equals, "^=".into(), TokenType::Caret, "^".into()) }

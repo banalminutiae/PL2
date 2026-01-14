@@ -35,7 +35,6 @@ impl fmt::Display for Statement {
 }
 
 #[derive(Debug, PartialEq)]
-// Whole statement e.g. let x = 5;
 pub struct LetStatement {
     pub token: Token,
     pub name: Identifier,
@@ -100,6 +99,7 @@ pub enum Expression {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
 	Prefix(Box<Prefix>),
+	Infix(Box<Infix>),
 }
 
 impl Node for Expression {
@@ -108,6 +108,7 @@ impl Node for Expression {
             Expression::Identifier(ident) => &ident.value,
             Expression::IntegerLiteral(_) => "int",
 			Expression::Prefix(_) => "who cares",
+			Expression::Infix(_) => "also who cares",
         }
     }
 }
@@ -118,6 +119,7 @@ impl fmt::Display for Expression {
 			Expression::Identifier(ident) => write!(f, "{}", ident),
 			Expression::IntegerLiteral(il) => write!(f, "{}", il),
 			Expression::Prefix(pe) => write!(f, "{}", pe),
+			Expression::Infix(inf) => write!(f, "{}", inf),
 		}
 	}
 }
@@ -157,6 +159,20 @@ pub struct Prefix {
 impl fmt::Display for Prefix {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}{}", self.operator, self.rhs)
+	}
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Infix {
+	pub token: Token,
+	pub lhs: Expression,
+	pub operator: String,
+	pub rhs: Expression,
+}
+
+impl fmt::Display for Infix {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}{}{}", self.lhs, self.operator, self.rhs)
 	}
 }
 

@@ -1,4 +1,4 @@
-use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, Statement, Expression, IntegerLiteral, Prefix, Program};
+use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, Statement, Expression, IntegerLiteral, Prefix, Infix, Program};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -114,12 +114,12 @@ impl<'a> Parser<'a> {
 
 	fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
 		let current_token = self.curr_token.clone();
+		let exp = self.parse_expression(Precedence::Lowest)?;
+
 		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
-		
-		let exp = self.parse_expression(Precedence::Lowest)?;
-		
+
 		let statement = ExpressionStatement { token: current_token, expression: exp };
 		Some(statement)
 	}
@@ -154,6 +154,19 @@ impl<'a> Parser<'a> {
 		Some(prefix)
 	}
 
+	fn parse_infix_expression(&mut self, lhs: Expression) -> Option<Infix> {
+		let current_token = self.curr_token.clone();
+		let operator = current_token.literal.clone();
+
+		self.next_token();
+		let precedence = self.get_current_precedence();
+		let rhs = self.parse_expression(precedence)?;
+
+		let infix = Infix { token: current_token, operator, lhs, rhs };
+		Some(infix)
+	}
+		
+
 	fn parse_identifier(&self) -> Identifier {
 		Identifier{ token: self.curr_token.clone(), value: self.curr_token.literal.clone() }
 	}
@@ -161,6 +174,18 @@ impl<'a> Parser<'a> {
 	fn parse_integer_literal(&self) -> IntegerLiteral {
 		let value = self.curr_token.literal.parse::<i64>().unwrap();
 		IntegerLiteral { token: self.curr_token.clone(), value }
+	}
+
+	fn get_current_precedence(&self) -> Precedence {
+		match self.curr_token.token_type {
+			TokenType::Equals | TokenType::Not_Equals => Precedence::Equals,
+			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
+			TokenType::Plus | TokenType::Minus => Precedence::Sum,
+			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
+			_ => Precedence::Lowest, 
+		};
+		
+		return Precedence::Lowest;
 	}
 
 	fn synchronize_statement(&mut self) {
@@ -173,7 +198,6 @@ impl<'a> Parser<'a> {
 		let message = format!("No prefix parse function for {:?} found", token_type);
 		self.errors.push(message);
 	}
-			
 
     fn peek_error(&mut self, token_type: TokenType) {
         let message = format!(
@@ -206,9 +230,6 @@ mod tests {
     fn test_let_statement() {
         let source = r#"
            let x = 5;
-           let y = 10;
-
-           let foobar = 828282;
         "#;
 
         let lexer = Lexer::new(source);
@@ -217,11 +238,12 @@ mod tests {
         let program = parser.parse_program();
 
         assert_eq!(parser.errors.len(), 0);
-        assert_eq!(program.statements.len(), 3);
+        assert_eq!(program.statements.len(), 1);
 
 		if let Statement::Let(let_statement) = &program.statements[0] {
 			assert_eq!(let_statement.name.value, "x");
-
+			assert_eq!(let_statement.name.token.literal, "x");
+			
 			if let Expression::IntegerLiteral(int_lit) = &let_statement.value {
 				assert_eq!(int_lit.value, 5);
 			} else {
@@ -230,7 +252,6 @@ mod tests {
 		} else {
 			panic!("expected let statement");
 		}
-
 		println!("Statements: {:#?}", program.statements);
 		println!("Errors: {:#?}", parser.errors);
     }
@@ -244,19 +265,29 @@ mod tests {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program();
-		println!("Statement: {:#?}", program.statements);
-		println!("Errors: {:#?}", parser.errors);		
+		
         assert_eq!(parser.errors.len(), 0);
         assert_eq!(program.statements.len(), 1);
 
-
+		if let Statement::Return(return_statement) = &program.statements[0] {
+			if let Expression::IntegerLiteral(int_lit) = &return_statement.value {
+				assert_eq!(int_lit.value, 5)
+			} else {
+				panic!("expected IntegerLiteral");
+			}
+		} else {
+			panic!("expected return statement")
+		}
+		println!("Statement: {:#?}", program.statements);
+		println!("Errors: {:#?}", parser.errors);
     }
 
     #[test]
     fn test_parser_errors() {
         let source = r#"
             let = 5;
-            let 828282;
+            let x 828282;
+            let 6767;
         "#;
 
         let lexer = Lexer::new(source);
@@ -264,7 +295,7 @@ mod tests {
 
         let _ = parser.parse_program();
 		println!("Reported errors: {:#?}", parser.errors);
-        assert_eq!(parser.errors.len(), 2);
+        assert_eq!(parser.errors.len(), 3);
     }
 
 	#[test]
