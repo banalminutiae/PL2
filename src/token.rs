@@ -64,7 +64,7 @@ pub enum TokenType {
 	While,
 	For,
 	Return,
-    EOF,
+    Eof,
 }
 
 static KEYWORDS: &[(&str, TokenType)] = &[

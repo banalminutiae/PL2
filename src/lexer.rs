@@ -124,7 +124,7 @@ impl<'a> Lexer<'a> {
 			'&' => { self.read_compound_token('&', TokenType::And, "&&".into(), TokenType::Amp, "&".into()) }
 			'<' => { self.read_compound_token('=', TokenType::Lteq, "<=".into(), TokenType::Lt, "<".into()) }
 			'>' => { self.read_compound_token('=', TokenType::Gteq, ">=".into(), TokenType::Gt, ">".into()) }
-            ' ' => { Token::new(TokenType::EOF, " ".into()) }
+            ' ' => { Token::new(TokenType::Eof, " ".into()) }
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
 				Token::new(lookup_identifier(&identifier), identifier)
@@ -193,7 +193,7 @@ mod tests {
 			Token::new(TokenType::Identifier, "y".into()),
 			Token::new(TokenType::Rparen, ")".into()),
             Token::new(TokenType::Semicolon, ";".into()),
-			Token::new(TokenType::EOF, " ".into()),
+			Token::new(TokenType::Eof, " ".into()),
         ];
 
         let mut lexer = Lexer::new(source);
@@ -234,7 +234,7 @@ mod tests {
 			Token::new(TokenType::False, "false".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 			Token::new(TokenType::Rbrace, "}".into()),
-			Token::new(TokenType::EOF, " ".into()),
+			Token::new(TokenType::Eof, " ".into()),
 		];
 		
 

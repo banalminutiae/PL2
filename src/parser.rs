@@ -10,6 +10,7 @@ pub struct Parser<'a> {
 }
 
 #[repr(u8)]
+#[derive(PartialEq, PartialOrd)]
 enum Precedence {
 	Lowest = 0,
 	Equals = 1,
@@ -41,7 +42,7 @@ impl<'a> Parser<'a> {
         let mut program = Program {
             statements: Vec::new(),
         };
-        while self.curr_token.token_type != TokenType::EOF {
+        while self.curr_token.token_type != TokenType::Eof {
             match self.parse_statement() {
                 Some(statement) => program.statements.push(statement),
 				None => self.synchronize_statement(),
@@ -125,21 +126,42 @@ impl<'a> Parser<'a> {
 	}
 
 	fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
-		match self.curr_token.token_type {
+		let mut left = match self.curr_token.token_type {
 			TokenType::Identifier => {
 				Some(Expression::Identifier(self.parse_identifier()))
 			}
 			TokenType::Integer => {
 				Some(Expression::IntegerLiteral(self.parse_integer_literal()))
 			}
-			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde => {
+			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde | TokenType::Equals_Equals => {
 				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?))) 
 			}
 			_ => {
 				self.no_prefix_parser_error(self.curr_token.token_type.clone());
 				None
 			}
+		};
+
+		while !self.peek_token_is(TokenType::Semicolon) && precedence < self.peek_precedence() {
+			left = match self.next_token.token_type {
+				TokenType::Plus
+					| TokenType::Minus
+					| TokenType::Asterisk
+					| TokenType::Slash
+					| TokenType::Equals
+					| TokenType::Equals_Equals
+					| TokenType::Not_Equals
+					| TokenType::Lt
+					| TokenType::Lteq
+					| TokenType::Gt
+					| TokenType::Gteq => {
+						self.next_token();
+						Some(Expression::Infix(Box::new(self.parse_infix_expression(left?)?)))
+					}
+				_ => return left
+			};
 		}
+		left
 	}
 
 	fn parse_prefix_expression(&mut self) -> Option<Prefix> {
@@ -177,13 +199,13 @@ impl<'a> Parser<'a> {
 	}
 
 	fn get_current_precedence(&self) -> Precedence {
-		match self.curr_token.token_type {
+		 match self.curr_token.token_type {
 			TokenType::Equals | TokenType::Not_Equals => Precedence::Equals,
 			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
 			_ => Precedence::Lowest, 
-		};
+		}
 	}
 
 	fn peek_precedence(&self) -> Precedence {
@@ -193,11 +215,11 @@ impl<'a> Parser<'a> {
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
 			_ => Precedence::Lowest, 
-		};
+		}
 	}
 
 	fn synchronize_statement(&mut self) {
-		while self.curr_token.token_type != TokenType::Semicolon && self.curr_token.token_type != TokenType::EOF {
+		while self.curr_token.token_type != TokenType::Semicolon && self.curr_token.token_type != TokenType::Eof {
 			self.next_token()
 		}
 	}
@@ -314,16 +336,18 @@ mod tests {
 		let mut parser = Parser::new(lexer);
 
 		let program = parser.parse_program();
+		if let Statement::Expression(exp_statement) = &program.statements[0] {
+			if let Expression::Identifier(id) = &exp_statement.expression {
+				assert_eq!(id.value, "foobar");
+			} else {
+				panic!("expected identifier");
+			}
+		} else {
+			panic!("expected identifier expression")
+		}
 		println!("{:#?}", program.statements);
 		assert_eq!(program.statements.len(), 1);
 		assert_eq!(parser.errors.len(), 0);
-		assert!(matches!(
-			program.statements[0],
-			Statement::Expression(ExpressionStatement {
-				expression: Expression::Identifier(Identifier { ref value, .. }),
-				..
-			}) if value == "foobar"
-		));
 	}
 
 	#[test]
@@ -360,5 +384,19 @@ mod tests {
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
 		assert_eq!(program.statements.len(), 4);
+	}
+
+	#[test]
+	fn test_infix_expression() {
+		let source = r#"
+            3 + 4 * 5 == 3 * 1 + 4 * 5;
+        "#;
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
+		println!("{:?}", parser.errors);
+		// assert_eq!(program.statements.len(), 1);
 	}
 }
