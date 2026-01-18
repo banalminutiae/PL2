@@ -1,4 +1,4 @@
-use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, Statement, Expression, IntegerLiteral, Prefix, Infix, Program};
+use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, Statement, Expression, IntegerLiteral, Boolean, Prefix, Infix, Program};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -136,6 +136,9 @@ impl<'a> Parser<'a> {
 			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde => {
 				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?))) 
 			}
+			TokenType::True | TokenType::False => {
+				Some(Expression::Boolean(self.parse_boolean()))
+			}
 			_ => {
 				self.no_prefix_parser_error(self.curr_token.token_type.clone());
 				None
@@ -189,12 +192,16 @@ impl<'a> Parser<'a> {
 		
 
 	fn parse_identifier(&self) -> Identifier {
-		Identifier{ token: self.curr_token.clone(), value: self.curr_token.literal.clone() }
+		Identifier { token: self.curr_token.clone(), value: self.curr_token.literal.clone() }
 	}
 
 	fn parse_integer_literal(&self) -> IntegerLiteral {
 		let value = self.curr_token.literal.parse::<i64>().unwrap();
 		IntegerLiteral { token: self.curr_token.clone(), value }
+	}
+
+	fn parse_boolean(&self) -> Boolean {
+		Boolean { token: self.curr_token.clone(), value: self.curr_token_is(TokenType::True) }
 	}
 
 	fn get_current_precedence(&self) -> Precedence {
@@ -223,6 +230,10 @@ impl<'a> Parser<'a> {
 		}
 	}
 
+	fn curr_token_is(&self, token: TokenType) -> bool {
+	    return self.curr_token.token_type == token;
+	}
+	
 	fn no_prefix_parser_error(&mut self, token_type: TokenType) {
 		let message = format!("No prefix parse function for {:?} found", token_type);
 		self.errors.push(message);
@@ -388,12 +399,14 @@ mod tests {
 		assert_eq!(parser.errors.len(), 0);
 	}
 
+	// TODO: Heavily flesh out with helper functions for readability. Split into operator precedence specific test cases
 	#[test]
 	fn test_infix_expression() {
 		let source = r#"
             x + y;
             x == y;
             3 + 4 * 5 == 3 * 1 + 4 * 5;
+            -1 * 2 + 3;
         "#;
 		let lexer = Lexer::new(source);
 		let mut parser = Parser::new(lexer);
@@ -401,7 +414,22 @@ mod tests {
 		let program = parser.parse_program();
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
-		assert_eq!(program.statements.len(), 3);
+		assert_eq!(program.statements.len(), 4);
+		assert_eq!(parser.errors.len(), 0);
+	}
+
+	#[test]
+	fn test_boolean() {
+		let source = r#"
+            3 > 5 == false;
+        "#;
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
+		println!("{:?}", parser.errors);
+		assert_eq!(program.statements.len(), 1);
 		assert_eq!(parser.errors.len(), 0);
 	}
 }
