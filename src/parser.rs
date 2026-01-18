@@ -61,8 +61,6 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_let_statement(&mut self) -> Option<LetStatement> {
-        let current_token = self.curr_token.clone();
-
         if !self.peek_and_consume_on_match(TokenType::Identifier) {
             return None;
         }
@@ -78,9 +76,7 @@ impl<'a> Parser<'a> {
 		let value = self.parse_expression(Precedence::Lowest);
 
 		let statement = LetStatement {
-            token: current_token.clone(),
             name: Identifier {
-                token: ident_token.clone(),
                 value: ident_token.literal.clone(),
             },
 			value: value?,
@@ -95,8 +91,6 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
-		let current_token = self.curr_token.clone();
-
 		self.next_token();
 		
 		let return_value = self.parse_expression(Precedence::Lowest);
@@ -106,7 +100,6 @@ impl<'a> Parser<'a> {
 		}
 		
         let statement = ReturnStatement {
-            token: current_token,
 			value: return_value?,
         };
 		
@@ -114,14 +107,13 @@ impl<'a> Parser<'a> {
     }
 
 	fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
-		let current_token = self.curr_token.clone();
 		let exp = self.parse_expression(Precedence::Lowest)?;
 
 		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
 
-		let statement = ExpressionStatement { token: current_token, expression: exp };
+		let statement = ExpressionStatement { expression: exp };
 		Some(statement)
 	}
 
@@ -174,7 +166,7 @@ impl<'a> Parser<'a> {
 
 		let rhs = self.parse_expression(Precedence::Prefix)?;
 		
-		let prefix = Prefix { token: current_token, operator, rhs };
+		let prefix = Prefix { operator, rhs };
 		Some(prefix)
 	}
 
@@ -186,22 +178,22 @@ impl<'a> Parser<'a> {
 		self.next_token();
 		let rhs = self.parse_expression(precedence)?;
 
-		let infix = Infix { token: current_token, operator, lhs, rhs };
+		let infix = Infix { operator, lhs, rhs };
 		Some(infix)
 	}
 		
 
 	fn parse_identifier(&self) -> Identifier {
-		Identifier { token: self.curr_token.clone(), value: self.curr_token.literal.clone() }
+		Identifier { value: self.curr_token.literal.clone() }
 	}
 
 	fn parse_integer_literal(&self) -> IntegerLiteral {
 		let value = self.curr_token.literal.parse::<i64>().unwrap();
-		IntegerLiteral { token: self.curr_token.clone(), value }
+		IntegerLiteral { value }
 	}
 
 	fn parse_boolean(&self) -> Boolean {
-		Boolean { token: self.curr_token.clone(), value: self.curr_token_is(TokenType::True) }
+		Boolean { value: self.curr_token_is(TokenType::True) }
 	}
 
 	fn get_current_precedence(&self) -> Precedence {
@@ -282,7 +274,6 @@ mod tests {
 
 		if let Statement::Let(let_statement) = &program.statements[0] {
 			assert_eq!(let_statement.name.value, "x");
-			assert_eq!(let_statement.name.token.literal, "x");
 			
 			if let Expression::IntegerLiteral(int_lit) = &let_statement.value {
 				assert_eq!(int_lit.value, 5);

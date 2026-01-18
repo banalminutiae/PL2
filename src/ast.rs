@@ -1,27 +1,11 @@
-use crate::token::Token;
 use std::fmt;
 
-pub trait Node {
-    fn token_literal(&self) -> &str;
-}
-
 // Statement ------------------------------------------------------------------------------
-
 #[derive(Debug, PartialEq)]
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
-}
-
-impl Node for Statement {
-    fn token_literal(&self) -> &str {
-        match self {
-            Statement::Let(ls) => ls.token_literal(),
-            Statement::Return(rt) => rt.token_literal(),
-            Statement::Expression(exp) => exp.token_literal(),
-        }
-    }
 }
 
 impl fmt::Display for Statement {
@@ -36,15 +20,8 @@ impl fmt::Display for Statement {
 
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {
-    pub token: Token,
     pub name: Identifier,
     pub value: Expression,
-}
-
-impl LetStatement {
-    pub fn token_literal(&self) -> &str {
-        "let"
-    }
 }
 
 impl fmt::Display for LetStatement {
@@ -55,14 +32,7 @@ impl fmt::Display for LetStatement {
 
 #[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
-    pub token: Token,
     pub value: Expression,
-}
-
-impl ReturnStatement {
-    pub fn token_literal(&self) -> &str {
-        "return"
-    }
 }
 
 impl fmt::Display for ReturnStatement {
@@ -73,19 +43,12 @@ impl fmt::Display for ReturnStatement {
 
 #[derive(Debug, PartialEq)]
 pub struct ExpressionStatement {
-	pub token: Token,
 	pub expression: Expression
-}
-
-impl ExpressionStatement {
-	pub fn token_literal(&self) -> &str {
-		&self.token.literal
-	}
 }
 
 impl fmt::Display for ExpressionStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", self.expression.token_literal())
+		write!(f, "{}", self.expression)
 	}
 }
 
@@ -103,18 +66,6 @@ pub enum Expression {
 	Infix(Box<Infix>),
 }
 
-impl Node for Expression {
-    fn token_literal(&self) -> &str {
-        match self {
-            Expression::Identifier(ident) => &ident.value,
-            Expression::IntegerLiteral(_) => "int",
-			Expression::Boolean(_) => "neither true nor false :p",
-			Expression::Prefix(_) => "who cares",
-			Expression::Infix(_) => "also who cares",
-        }
-    }
-}
-
 impl fmt::Display for Expression {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
@@ -130,7 +81,6 @@ impl fmt::Display for Expression {
 #[derive(Debug, PartialEq)]
 // variable name of let x = 5, x is represented by the token.
 pub struct Identifier {
-    pub token: Token,
     pub value: String,
 }
 
@@ -142,7 +92,6 @@ impl fmt::Display for Identifier {
 
 #[derive(Debug, PartialEq)]
 pub struct IntegerLiteral {
-	pub token: Token,
     pub value: i64,
 }
 
@@ -154,7 +103,6 @@ impl fmt::Display for IntegerLiteral {
 
 #[derive(Debug, PartialEq)]
 pub struct Boolean {
-	pub token: Token,
 	pub value: bool,
 }
 
@@ -166,7 +114,6 @@ impl fmt::Display for Boolean {
 
 #[derive(Debug, PartialEq)]
 pub struct Prefix {
-	pub token: Token,
 	pub operator: String,
 	pub rhs: Expression,
 }
@@ -179,7 +126,6 @@ impl fmt::Display for Prefix {
 
 #[derive(Debug, PartialEq)]
 pub struct Infix {
-	pub token: Token,
 	pub lhs: Expression,
 	pub operator: String,
 	pub rhs: Expression,
@@ -196,16 +142,6 @@ impl fmt::Display for Infix {
 #[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
-}
-
-impl Node for Program {
-    fn token_literal(&self) -> &str {
-        if self.statements.is_empty() {
-            self.statements[0].token_literal()
-        } else {
-            ""
-        }
-    }
 }
 
 impl fmt::Display for Program {
