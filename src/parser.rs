@@ -179,9 +179,9 @@ impl<'a> Parser<'a> {
 	fn parse_infix_expression(&mut self, lhs: Expression) -> Option<Infix> {
 		let current_token = self.curr_token.clone();
 		let operator = current_token.literal.clone();
+		let precedence = self.get_current_precedence();
 
 		self.next_token();
-		let precedence = self.get_current_precedence();
 		let rhs = self.parse_expression(precedence)?;
 
 		let infix = Infix { token: current_token, operator, lhs, rhs };
@@ -357,16 +357,18 @@ mod tests {
 		let mut parser = Parser::new(lexer);
 
 		let program = parser.parse_program();
+		if let Statement::Expression(exp_statement) = &program.statements[0] {
+			if let Expression::IntegerLiteral(int_lit) = &exp_statement.expression {
+				assert_eq!(int_lit.value, 1267);
+			} else {
+				panic!("expected integer literal");
+			}
+		} else {
+			panic!("expected integer literal")
+		}
 		println!("{:#?}", program.statements);
 		assert_eq!(program.statements.len(), 1);
 		assert_eq!(parser.errors.len(), 0);
-		assert!(matches!(
-			program.statements[0],
-			Statement::Expression(ExpressionStatement {
-				expression: Expression::IntegerLiteral(IntegerLiteral { ref value, .. }),
-				..
-			}) if *value == 1267
-		));
 	}
 
 	#[test]
@@ -397,6 +399,6 @@ mod tests {
 		let program = parser.parse_program();
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
-		// assert_eq!(program.statements.len(), 1);
+		// assert_eq!(program.statements.len(), 1); 
 	}
 }
