@@ -133,7 +133,7 @@ impl<'a> Parser<'a> {
 			TokenType::Integer => {
 				Some(Expression::IntegerLiteral(self.parse_integer_literal()))
 			}
-			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde | TokenType::Equals_Equals => {
+			TokenType::Minus | TokenType::Exclamation | TokenType::Tilde => {
 				Some(Expression::Prefix(Box::new(self.parse_prefix_expression()?))) 
 			}
 			_ => {
@@ -148,7 +148,6 @@ impl<'a> Parser<'a> {
 					| TokenType::Minus
 					| TokenType::Asterisk
 					| TokenType::Slash
-					| TokenType::Equals
 					| TokenType::Equals_Equals
 					| TokenType::Not_Equals
 					| TokenType::Lt
@@ -200,7 +199,7 @@ impl<'a> Parser<'a> {
 
 	fn get_current_precedence(&self) -> Precedence {
 		 match self.curr_token.token_type {
-			TokenType::Equals | TokenType::Not_Equals => Precedence::Equals,
+			TokenType::Equals_Equals | TokenType::Not_Equals => Precedence::Equals,
 			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
@@ -210,7 +209,7 @@ impl<'a> Parser<'a> {
 
 	fn peek_precedence(&self) -> Precedence {
 		match self.next_token.token_type {
-			TokenType::Equals | TokenType::Not_Equals => Precedence::Equals,
+			TokenType::Equals_Equals | TokenType::Not_Equals => Precedence::Equals,
 			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
@@ -386,11 +385,14 @@ mod tests {
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
 		assert_eq!(program.statements.len(), 4);
+		assert_eq!(parser.errors.len(), 0);
 	}
 
 	#[test]
 	fn test_infix_expression() {
 		let source = r#"
+            x + y;
+            x == y;
             3 + 4 * 5 == 3 * 1 + 4 * 5;
         "#;
 		let lexer = Lexer::new(source);
@@ -399,6 +401,7 @@ mod tests {
 		let program = parser.parse_program();
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
-		// assert_eq!(program.statements.len(), 1); 
+		assert_eq!(program.statements.len(), 3);
+		assert_eq!(parser.errors.len(), 0);
 	}
 }
