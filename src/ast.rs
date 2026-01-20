@@ -56,6 +56,7 @@ impl fmt::Display for ExpressionStatement {
 
 #[derive(Debug, PartialEq)]
 pub enum Expression {
+	IfExpression(Box<IfExpression>),
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
 	Boolean(Boolean),
@@ -66,6 +67,7 @@ pub enum Expression {
 impl fmt::Display for Expression {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
+			Expression::IfExpression(ifx) => write!(f, "{}", ifx),
 			Expression::Identifier(ident) => write!(f, "{}", ident),
 			Expression::IntegerLiteral(il) => write!(f, "{}", il),
 			Expression::Boolean(b) => write!(f, "{}", b),
@@ -106,6 +108,30 @@ pub struct Boolean {
 impl fmt::Display for Boolean {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}", self.value)
+	}
+}
+
+#[derive(Debug, PartialEq)]
+pub struct IfExpression {
+	pub condition: Expression,
+	pub consequence: BlockStatement,
+	pub alternative: Option<BlockStatement>,
+}
+
+impl fmt::Display for IfExpression {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}{}{:?}", self.condition, self.consequence, self.alternative)
+	}
+}
+
+#[derive(Debug, PartialEq)]
+pub struct BlockStatement {
+	pub statements: Vec<Statement>,
+}
+		
+impl fmt::Display for BlockStatement {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:?}", self.statements)
 	}
 }
 

@@ -30,7 +30,6 @@ impl<'a> Lexer<'a> {
 	pub fn peek_char(&mut self) -> Option<char> {
 		self.input[self.cursor..].chars().next()
 	}
-
 	
 	// TODO: CLEANUP, should be able to peek an arbitrary number of times, either by param
 	// or by replacing source iteration. Also, a new slice is created with each call, which is memory inefficient

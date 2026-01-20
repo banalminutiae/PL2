@@ -1,4 +1,4 @@
-use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, Statement, Expression, IntegerLiteral, Boolean, Prefix, Infix, Program};
+use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, IfExpression, BlockStatement, Statement, Expression, IntegerLiteral, Boolean, Prefix, Infix, Program};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -134,6 +134,9 @@ impl<'a> Parser<'a> {
 			TokenType::Lparen => {
 				Some(self.parse_grouped_expression()?)
 			}
+			TokenType::If => {
+				Some(Expression::IfExpression(Box::new(self.parse_if_expression()?)))
+			}
 			_ => {
 				self.no_prefix_parser_error(self.curr_token.token_type.clone());
 				None
@@ -184,7 +187,7 @@ impl<'a> Parser<'a> {
 		let infix = Infix { operator, lhs, rhs };
 		Some(infix)
 	}
-		
+	
 	fn parse_grouped_expression(&mut self) -> Option<Expression> {
 		self.next_token();
 		let exp = self.parse_expression(Precedence::Lowest);
@@ -195,6 +198,50 @@ impl<'a> Parser<'a> {
 		}
 		self.next_token();
 		return exp;
+	}
+
+	fn parse_if_expression(&mut self) -> Option<IfExpression> {
+		// TODO: Reconsider parenthesis for if statements
+		if !(self.next_token.token_type == TokenType::Lparen) {
+			self.peek_error(TokenType::Lparen);
+			return None;
+		}
+		self.next_token();
+
+		let condition = self.parse_expression(Precedence::Lowest).unwrap(); // TODO: REVISIT
+
+		if !(self.curr_token.token_type == TokenType::Rparen) {
+			self.peek_error(TokenType::Rparen);
+			return None;
+		}
+		self.next_token();
+
+		let consequence = self.parse_block_statement();
+		let alternative = if self.next_token.token_type == TokenType::Else {
+			self.next_token();
+			// TODO: Replace with consume_on_match use (why isn't it plug-and-play?)
+			if self.next_token.token_type != TokenType::Lbrace {
+				self.peek_error(TokenType::Lbrace);
+				return None;
+			}
+			Some(self.parse_block_statement())
+		} else {
+			None
+		};
+		let exp = IfExpression { condition, consequence, alternative };
+		Some(exp)
+	}
+
+	fn parse_block_statement(&mut self) -> BlockStatement {
+		self.next_token(); 
+		let mut statements = Vec::new();
+		while !(self.curr_token.token_type == TokenType::Rbrace) && !(self.curr_token.token_type == TokenType::Eof) {
+			if let Some(stmt) = self.parse_statement() {
+				statements.push(stmt);
+			}
+			self.next_token();
+		}
+		return BlockStatement { statements };
 	}
 
 	fn parse_identifier(&self) -> Identifier {
@@ -211,7 +258,7 @@ impl<'a> Parser<'a> {
 	}
 
 	fn get_current_precedence(&self) -> Precedence {
-		 match self.curr_token.token_type {
+		match self.curr_token.token_type {
 			TokenType::Equals_Equals | TokenType::Not_Equals => Precedence::Equals,
 			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
@@ -237,35 +284,35 @@ impl<'a> Parser<'a> {
 	}
 
 	fn curr_token_is(&self, token: TokenType) -> bool {
-	    return self.curr_token.token_type == token;
+		return self.curr_token.token_type == token;
 	}
-	
+
 	fn no_prefix_parser_error(&mut self, token_type: TokenType) {
 		let message = format!("No prefix parse function for {:?} found", token_type);
 		self.errors.push(message);
 	}
 
-    fn peek_error(&mut self, token_type: TokenType) {
-        let message = format!(
-            "Expected next token to be {:?}, got {:?} instead",
-            token_type, self.next_token.token_type
-        );
-        self.errors.push(message);
-    }
+	fn peek_error(&mut self, token_type: TokenType) {
+		let message = format!(
+			"Expected next token to be {:?}, got {:?} instead",
+			token_type, self.next_token.token_type
+		);
+		self.errors.push(message);
+	}
 
 	fn peek_token_is(&mut self, expected_type: TokenType) -> bool {
 		self.next_token.token_type == expected_type 
 	}
-	
-    fn peek_and_consume_on_match(&mut self, expected_type: TokenType) -> bool {
-        if self.next_token.token_type == expected_type {
-            self.next_token();
-            true
-        } else {
-            self.peek_error(expected_type);
-            false
-        }
-    }
+
+	fn peek_and_consume_on_match(&mut self, expected_type: TokenType) -> bool {
+		if self.next_token.token_type == expected_type {
+			self.next_token();
+			true
+		} else {
+			self.peek_error(expected_type);
+			false
+		}
+	}
 }
 
 #[cfg(test)]
@@ -454,5 +501,25 @@ mod tests {
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
 		assert_eq!(parser.errors.len(), 0);
+	}
+
+	#[test]
+	fn test_if_expression() {
+		let source = r#"
+            let x = if (true) {
+                4 / 2;
+            }
+            let y = if (false) {
+                4 / 0;
+            } else {
+                4 / 1;
+            }
+        "#;
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
+		println!("{:?}", parser.errors);
 	}
 }
