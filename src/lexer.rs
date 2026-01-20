@@ -25,11 +25,18 @@ impl<'a> Lexer<'a> {
         } else {
             None
         }
-	} 
+	}
 
-    fn peek_char(&mut self) -> Option<char> {
-        self.input[self.cursor..].chars().next()
-    }
+	pub fn peek_char(&mut self) -> Option<char> {
+		self.input[self.cursor..].chars().next()
+	}
+
+	
+	// TODO: CLEANUP, should be able to peek an arbitrary number of times, either by param
+	// or by replacing source iteration. Also, a new slice is created with each call, which is memory inefficient
+	pub fn peek_char_again(&mut self) -> Option<char> {
+		self.input[self.cursor + 1..].chars().next()
+	}
 
 	fn eat_whitespace_and_comments(&mut self) {
 		while let Some(ch) = self.peek_char() {
@@ -38,14 +45,14 @@ impl<'a> Lexer<'a> {
 					self.read_char();
 				}
 				'/' => {
-					if self.peek_char() == Some('/') {
-						self.read_char(); // consume first /
-						self.read_char(); // consume second /
+					if self.peek_char_again() == Some('/') {
+						self.read_char();
+						self.read_char();
 						self.eat_until_newline();
 					} else {
 						break;
 					}
-				}
+				} 
 				_ => break,
 			}
 		}
@@ -120,7 +127,6 @@ impl<'a> Lexer<'a> {
 			'*' => { self.read_compound_token('=', TokenType::Multiply_Equals, "*=".into(), TokenType::Asterisk, "*".into()) }
 			'+' => { self.read_compound_token('=', TokenType::Plus_Equals, "+=".into(), TokenType::Plus, "+".into()) }
 			'-' => { self.read_compound_token('=', TokenType::Minus_Equals, "-=".into(), TokenType::Minus, "-".into()) }
-			'/' => { self.read_compound_token('=', TokenType::Slash_Equals, "/=".into(), TokenType::Slash, "/".into()) }
 			'=' => { self.read_compound_token('=', TokenType::Equals_Equals, "==".into(), TokenType::Equals, "=".into()) }
 			'!' => { self.read_compound_token('=', TokenType::Not_Equals, "!=".into(), TokenType::Exclamation, "!".into()) }
 			'^' => { self.read_compound_token('=', TokenType::Caret_Equals, "^=".into(), TokenType::Caret, "^".into()) }
@@ -129,6 +135,8 @@ impl<'a> Lexer<'a> {
 			'<' => { self.read_compound_token('=', TokenType::Lteq, "<=".into(), TokenType::Lt, "<".into()) }
 			'>' => { self.read_compound_token('=', TokenType::Gteq, ">=".into(), TokenType::Gt, ">".into()) }
             ' ' => { Token::new(TokenType::Eof, " ".into()) }
+			'/' => { self.read_compound_token('=', TokenType::Slash_Equals, "/=".into(), TokenType::Slash, "/".into()) }
+
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
 				Token::new(lookup_identifier(&identifier), identifier)
@@ -144,6 +152,28 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+	#[test]
+	fn test_eat_whitespace<'a>() {
+		let source = r#"
+              let    x =         15;
+        "#;
+		
+        let lexer_cases = [
+            Token::new(TokenType::Let, "let".into()),
+            Token::new(TokenType::Identifier, "x".into()),
+            Token::new(TokenType::Equals, "=".into()),
+            Token::new(TokenType::Integer, "15".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
+		];
+		
+		let mut lexer = Lexer::new(source);
+		for (_, expected_token) in lexer_cases.iter().enumerate() {
+            let actual_token = lexer.next_token();
+            println!("Expected: {:?}, Got: {:?}", expected_token, actual_token);
+            assert_eq!(&actual_token, expected_token);
+		}
+	}
 
     #[test]
     fn test_declarations<'a>() {
