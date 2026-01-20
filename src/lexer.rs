@@ -14,7 +14,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn read_char(&mut self) -> Option<char> {
+    pub fn read_char(&mut self) -> Option<char> {
 		let remaining_input = &self.input[self.cursor..];
 
 		let mut chars = remaining_input.chars(); 
@@ -31,16 +31,20 @@ impl<'a> Lexer<'a> {
         self.input[self.cursor..].chars().next()
     }
 
-    fn eat_whitespace_and_comments(&mut self) {
+	fn eat_whitespace_and_comments(&mut self) {
 		while let Some(ch) = self.peek_char() {
-			match Some(ch) {
-				Some(ch) if (ch.is_whitespace()) => {
+			match ch {
+				c if c.is_whitespace() => {
 					self.read_char();
 				}
-				Some('/') => {
-					self.read_char();
-					self.read_char();
-					self.eat_until_newline();
+				'/' => {
+					if self.peek_char() == Some('/') {
+						self.read_char(); // consume first /
+						self.read_char(); // consume second /
+						self.eat_until_newline();
+					} else {
+						break;
+					}
 				}
 				_ => break,
 			}
@@ -252,6 +256,7 @@ mod tests {
 		let source = r#"
             // You should never read this
             let x = 0;
+            15 / x;
         "#;
 
 		let lexer_cases = [
@@ -259,6 +264,10 @@ mod tests {
             Token::new(TokenType::Identifier, "x".into()),
             Token::new(TokenType::Equals, "=".into()),
             Token::new(TokenType::Integer, "0".into()),
+			Token::new(TokenType::Semicolon, ";".into()),
+			Token::new(TokenType::Integer, "15".into()),
+			Token::new(TokenType::Slash, "/".into()),
+			Token::new(TokenType::Identifier, "x".into()),
 			Token::new(TokenType::Semicolon, ";".into()),
 		];
 

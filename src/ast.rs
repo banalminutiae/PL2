@@ -56,9 +56,6 @@ impl fmt::Display for ExpressionStatement {
 
 #[derive(Debug, PartialEq)]
 pub enum Expression {
-    // Anything that resolves to a value. Bools, len(), string literals etc.
-    // Ifs and loops can go here because that'd be coo
-    // function calls, prefix and postifx operators, and comparisons are also expressions
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
 	Boolean(Boolean),

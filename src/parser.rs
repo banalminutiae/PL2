@@ -10,7 +10,7 @@ pub struct Parser<'a> {
 }
 
 #[repr(u8)]
-#[derive(PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd)]
 enum Precedence {
 	Lowest = 0,
 	Equals = 1,
@@ -131,6 +131,9 @@ impl<'a> Parser<'a> {
 			TokenType::True | TokenType::False => {
 				Some(Expression::Boolean(self.parse_boolean()))
 			}
+			TokenType::Lparen => {
+				Some(self.parse_grouped_expression()?)
+			}
 			_ => {
 				self.no_prefix_parser_error(self.curr_token.token_type.clone());
 				None
@@ -138,6 +141,7 @@ impl<'a> Parser<'a> {
 		};
 
 		while !self.peek_token_is(TokenType::Semicolon) && precedence < self.peek_precedence() {
+			println!("Peeked token: {:?}, Precedence: {:?}", self.next_token.token_type, self.peek_precedence());
 			left = match self.next_token.token_type {
 				TokenType::Plus
 					| TokenType::Minus
@@ -152,7 +156,7 @@ impl<'a> Parser<'a> {
 						self.next_token();
 						Some(Expression::Infix(Box::new(self.parse_infix_expression(left?)?)))
 					}
-				_ => return left
+				_ => return None
 			};
 		}
 		left
@@ -171,8 +175,7 @@ impl<'a> Parser<'a> {
 	}
 
 	fn parse_infix_expression(&mut self, lhs: Expression) -> Option<Infix> {
-		let current_token = self.curr_token.clone();
-		let operator = current_token.literal.clone();
+		let operator = self.curr_token.literal.clone();
 		let precedence = self.get_current_precedence();
 
 		self.next_token();
@@ -182,6 +185,17 @@ impl<'a> Parser<'a> {
 		Some(infix)
 	}
 		
+	fn parse_grouped_expression(&mut self) -> Option<Expression> {
+		self.next_token();
+		let exp = self.parse_expression(Precedence::Lowest);
+
+		if !(self.next_token.token_type == TokenType::Rparen) {
+			self.peek_error(TokenType::Rparen);
+			return None;
+		}
+		self.next_token();
+		return exp;
+	}
 
 	fn parse_identifier(&self) -> Identifier {
 		Identifier { value: self.curr_token.literal.clone() }
@@ -421,6 +435,24 @@ mod tests {
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
 		assert_eq!(program.statements.len(), 1);
+		assert_eq!(parser.errors.len(), 0);
+	}
+
+	#[test]
+	fn test_grouped_expression() {
+		let source = r#"
+            1 + (2 + 3) + 4;
+            (5 + 5) * 2;
+            -(5 + 5);
+            !(true == true);
+            2 / (5 + 5);
+        "#;
+		let lexer = Lexer::new(source);
+		let mut parser = Parser::new(lexer);
+
+		let program = parser.parse_program();
+		println!("{:#?}", program.statements);
+		println!("{:?}", parser.errors);
 		assert_eq!(parser.errors.len(), 0);
 	}
 }
