@@ -197,7 +197,7 @@ impl<'a> Parser<'a> {
 			return None;
 		}
 		self.next_token();
-		return exp;
+		exp
 	}
 
 	fn parse_if_expression(&mut self) -> Option<IfExpression> {
@@ -219,8 +219,7 @@ impl<'a> Parser<'a> {
 		let consequence = self.parse_block_statement();
 		let alternative = if self.next_token.token_type == TokenType::Else {
 			self.next_token();
-			// TODO: Replace with consume_on_match use (why isn't it plug-and-play?)
-			if self.next_token.token_type != TokenType::Lbrace {
+			if self.peek_and_consume_on_match(TokenType::Lbrace) {
 				self.peek_error(TokenType::Lbrace);
 				return None;
 			}
@@ -241,7 +240,7 @@ impl<'a> Parser<'a> {
 			}
 			self.next_token();
 		}
-		return BlockStatement { statements };
+		BlockStatement { statements }
 	}
 
 	fn parse_identifier(&self) -> Identifier {
@@ -284,7 +283,7 @@ impl<'a> Parser<'a> {
 	}
 
 	fn curr_token_is(&self, token: TokenType) -> bool {
-		return self.curr_token.token_type == token;
+		self.curr_token.token_type == token
 	}
 
 	fn no_prefix_parser_error(&mut self, token_type: TokenType) {
