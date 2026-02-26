@@ -1,4 +1,4 @@
-use crate::ast::{Identifier, LetStatement, ExpressionStatement, ReturnStatement, IfExpression, BlockStatement, Statement, Expression, IntegerLiteral, Boolean, Prefix, Infix, Program};
+use crate::ast::{Identifier, LetStatement, ReturnStatement, IfExpression, BlockStatement, Statement, Expression, IntegerLiteral, Boolean, Prefix, Infix, Program};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -106,15 +106,14 @@ impl<'a> Parser<'a> {
         Some(statement)
     }
 
-	fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
+	fn parse_expression_statement(&mut self) -> Option<Expression> {
 		let exp = self.parse_expression(Precedence::Lowest)?;
 
 		if self.peek_token_is(TokenType::Semicolon) {
 			self.next_token();
 		}
 
-		let statement = ExpressionStatement { expression: exp };
-		Some(statement)
+		Some(exp)
 	}
 
 	fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
@@ -397,7 +396,7 @@ mod tests {
 
 		let program = parser.parse_program();
 		if let Statement::Expression(exp_statement) = &program.statements[0] {
-			if let Expression::Identifier(id) = &exp_statement.expression {
+			if let Expression::Identifier(id) = &exp_statement {
 				assert_eq!(id.value, "foobar");
 			} else {
 				panic!("expected identifier");
@@ -418,7 +417,7 @@ mod tests {
 
 		let program = parser.parse_program();
 		if let Statement::Expression(exp_statement) = &program.statements[0] {
-			if let Expression::IntegerLiteral(int_lit) = &exp_statement.expression {
+			if let Expression::IntegerLiteral(int_lit) = &exp_statement {
 				assert_eq!(int_lit.value, 1267);
 			} else {
 				panic!("expected integer literal");

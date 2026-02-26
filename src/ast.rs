@@ -5,7 +5,7 @@ use std::fmt;
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
-    Expression(ExpressionStatement),
+    Expression(Expression),
 }
 
 impl fmt::Display for Statement {
@@ -38,17 +38,6 @@ pub struct ReturnStatement {
 impl fmt::Display for ReturnStatement {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "return {}", self.value)
-	}
-}
-
-#[derive(Debug, PartialEq)]
-pub struct ExpressionStatement {
-	pub expression: Expression
-}
-
-impl fmt::Display for ExpressionStatement {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", self.expression)
 	}
 }
 
@@ -120,7 +109,11 @@ pub struct IfExpression {
 
 impl fmt::Display for IfExpression {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}{}{:?}", self.condition, self.consequence, self.alternative)
+		if self.alternative.is_some() {
+			write!(f, "{}{}{:?}", self.condition, self.consequence, self.alternative)
+		} else {
+			write!(f, "{}{}", self.condition, self.consequence)
+		}
 	}
 }
 
