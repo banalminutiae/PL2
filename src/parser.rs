@@ -144,7 +144,6 @@ impl<'a> Parser<'a> {
 		};
 
 		while !self.peek_token_is(TokenType::Semicolon) && precedence < self.peek_precedence() {
-			println!("Peeked token: {:?}, Precedence: {:?}", self.next_token.token_type, self.peek_precedence());
 			left = match self.next_token.token_type {
 				TokenType::Plus
 					| TokenType::Minus
@@ -217,9 +216,9 @@ impl<'a> Parser<'a> {
 		self.next_token();
 
 		let consequence = self.parse_block_statement();
-		let alternative = if self.next_token.token_type == TokenType::Else {
+		let alternative = if self.peek_token_is(TokenType::Else) {
 			self.next_token();
-			if self.peek_and_consume_on_match(TokenType::Lbrace) {
+			if !self.peek_and_consume_on_match(TokenType::Lbrace) {
 				self.peek_error(TokenType::Lbrace);
 				return None;
 			}
@@ -259,7 +258,7 @@ impl<'a> Parser<'a> {
 	fn get_current_precedence(&self) -> Precedence {
 		match self.curr_token.token_type {
 			TokenType::Equals_Equals | TokenType::Not_Equals => Precedence::Equals,
-			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
+			TokenType::Lt | TokenType::Gt | TokenType::Lteq | TokenType::Gteq => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
 			_ => Precedence::Lowest, 
@@ -269,7 +268,7 @@ impl<'a> Parser<'a> {
 	fn peek_precedence(&self) -> Precedence {
 		match self.next_token.token_type {
 			TokenType::Equals_Equals | TokenType::Not_Equals => Precedence::Equals,
-			TokenType::Lt | TokenType::Gt     => Precedence::LessGreater,
+			TokenType::Lt | TokenType::Gt | TokenType::Lteq | TokenType::Gteq => Precedence::LessGreater,
 			TokenType::Plus | TokenType::Minus => Precedence::Sum,
 			TokenType::Slash | TokenType::Asterisk => Precedence::Product,
 			_ => Precedence::Lowest, 
@@ -472,7 +471,7 @@ mod tests {
 	#[test]
 	fn test_boolean() {
 		let source = r#"
-            3 > 5 == false;
+            3 >= 5 == false;
         "#;
 		let lexer = Lexer::new(source);
 		let mut parser = Parser::new(lexer);
@@ -520,5 +519,6 @@ mod tests {
 		let program = parser.parse_program();
 		println!("{:#?}", program.statements);
 		println!("{:?}", parser.errors);
+		assert_eq!(parser.errors.len(), 0);
 	}
 }
