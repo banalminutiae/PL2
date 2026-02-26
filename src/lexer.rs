@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType, lookup_identifier};
+use crate::token::{Token, TokenType, lookup_keyword};
 
 #[derive(Clone)]
 pub struct Lexer<'a> {
@@ -138,7 +138,7 @@ impl<'a> Lexer<'a> {
 
 			_ if current_char.is_alphabetic() => {
 				let identifier = self.read_identifier(start_pos);
-				Token::new(lookup_identifier(&identifier), identifier)
+				Token::new(lookup_keyword(&identifier), identifier)
 			}
 			_ if current_char.is_ascii_digit() => {
 				Token::new(TokenType::Integer, self.read_number(start_pos))

@@ -67,22 +67,17 @@ pub enum TokenType {
     Eof,
 }
 
-static KEYWORDS: &[(&str, TokenType)] = &[
-	("fn", TokenType::Function),
-	("let", TokenType::Let),
-	("true", TokenType::True),
-	("false", TokenType::False),
-	("if", TokenType::If),
-	("else", TokenType::Else),
-	("while", TokenType::While),
-	("for", TokenType::For),
-	("return", TokenType::Return),
-];
-
-pub fn lookup_identifier(literal: &str) -> TokenType {
-	if let Some((_, value)) = KEYWORDS.iter().find(|(k, _)| *k == literal) {
-		value.clone()
-	} else {
-		TokenType::Identifier
+pub fn lookup_keyword(literal: &str) -> TokenType {
+	match literal {
+		"fn" => TokenType::Function,
+		"let" => TokenType::Let,
+		"true" => TokenType::True,
+		"false" => TokenType::False,
+		"if" => TokenType::If,
+		"else" => TokenType::Else,
+		"while" => TokenType::While,
+		"for" => TokenType::For,
+		"return" => TokenType::Return,
+		_ => TokenType::Identifier,
 	}
 }
